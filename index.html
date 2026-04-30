@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack Pro — نظام إدارة الأجهزة الطبية</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏥%3C/text%3E%3C/svg%3E">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#1a3a5c;--primary2:#2471a3;--accent:#e84c3d;
+  --success:#27ae60;--warn:#f39c12;--info:#2980b9;
+  --bg:#f0f2f5;--card:#fff;--text:#2c3e50;--muted:#7f8c8d;
+  --border:#dce1e7;--sidebar:230px;
+}
+html,body{height:100%;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;direction:rtl}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit;font-size:13px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px}
+
+#app{display:flex;height:100vh;overflow:hidden}
+#sidebar{width:var(--sidebar);flex-shrink:0;background:linear-gradient(180deg,#0f2744,#1a3a5c);display:flex;flex-direction:column;overflow-y:auto;box-shadow:2px 0 12px rgba(0,0,0,.15)}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+#topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 24px;height:58px;display:flex;align-items:center;gap:14px;flex-shrink:0;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+#content{flex:1;overflow-y:auto;padding:24px}
+
+.logo{padding:22px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.logo h2{color:#fff;font-size:15px;font-weight:700}
+.logo p{color:rgba(255,255,255,.4);font-size:11px;margin-top:3px}
+.nav-section{padding:10px 0}
+.nav-lbl{padding:8px 18px 5px;font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:rgba(255,255,255,.65);font-size:13px;cursor:pointer;border-right:3px solid transparent;transition:all .15s}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:rgba(255,255,255,.1);color:#fff;border-right-color:#5dade2}
+.nav-item .ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-badge{margin-right:auto;background:var(--accent);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px}
+
+#topbar h1{font-size:16px;font-weight:600;flex:1}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+#user-name-display{font-size:13px;color:var(--muted)}
+.tb-btn{width:36px;height:36px;border-radius:50%;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+
+.page{display:none}.page.active{display:block}
+
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-size:17px;font-weight:700}
+.hdr-btns{display:flex;gap:10px;align-items:center}
+
+.btn{padding:8px 18px;border-radius:7px;border:none;font-weight:500;transition:all .15s;display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:13px}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{background:var(--bg)}
+.btn-success{background:#eafaf1;color:#1e8449;border:1px solid #a9dfbf}
+.btn-danger{background:#fdedec;color:#c0392b;border:1px solid #f5b7b1}
+.btn-warn{background:#fef9e7;color:#b7770d;border:1px solid #f9e79f}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-xs{padding:3px 9px;font-size:11px;border-radius:5px}
+
+.card{background:var(--card);border-radius:12px;border:1px solid var(--border);overflow:hidden}
+.card-hdr{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:600}
+.card-body{padding:18px}
+
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.stat-card{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:18px 20px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;right:0;width:4px;height:100%;background:var(--sc,var(--primary))}
+.stat-lbl{font-size:12px;color:var(--muted);margin-bottom:8px}
+.stat-val{font-size:28px;font-weight:800;line-height:1}
+.stat-sub{font-size:11px;margin-top:6px;color:var(--muted)}
+.stat-icon{position:absolute;top:14px;left:14px;font-size:32px;opacity:.1}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.g2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px}
+
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:right;padding:10px 14px;font-weight:600;font-size:11px;color:var(--muted);background:#f8f9fa;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+.td-sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.b-success{background:#eafaf1;color:#1e8449}.b-danger{background:#fdedec;color:#c0392b}
+.b-warn{background:#fef9e7;color:#b7770d}.b-info{background:#eaf4fc;color:#1a5276}
+.b-gray{background:#f2f3f4;color:#566573}
+.bdot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+.form-group{margin-bottom:14px}
+.form-lbl{font-size:12px;font-weight:600;margin-bottom:5px;display:block;color:var(--text)}
+.form-ctrl{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:#fff;color:var(--text)}
+.form-ctrl:focus{border-color:var(--primary2);box-shadow:0 0 0 3px rgba(36,113,163,.1)}
+textarea.form-ctrl{resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.search-bar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.search-inp{flex:1;min-width:160px;padding:8px 14px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;background:#fff}
+.search-inp:focus{border-color:var(--primary2)}
+.filter-sel{padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;background:#fff;cursor:pointer;outline:none}
+
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:999;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:14px;width:92%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-hdr{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-hdr strong{font-size:15px}
+.modal-close{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer}
+.modal-body{padding:22px}
+.modal-ftr{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+
+.alert{border-radius:8px;padding:11px 14px;font-size:13px;display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;border:1px solid}
+.a-danger{background:#fdedec;border-color:#f5b7b1;color:#922b21}
+.a-warn{background:#fef9e7;border-color:#f9e79f;color:#7d6608}
+.a-info{background:#eaf4fc;border-color:#a9cce3;color:#1a5276}
+.a-success{background:#eafaf1;border-color:#a9dfbf;color:#1e6e3c}
+
+.chart-box{position:relative;height:220px}
+
+.prog{background:#e9ecef;border-radius:4px;height:6px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;border-radius:4px}
+
+.fault-item{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border)}
+.fault-item:last-child{border-bottom:none}
+.fault-ic{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.fault-body{flex:1}
+.fault-title{font-size:13px;font-weight:600;margin-bottom:3px}
+.fault-meta{font-size:11px;color:var(--muted)}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .ei{font-size:48px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+#login-screen,#config-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0f2744,#1a3a5c 60%,#1a6b8a);display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-box{background:#fff;border-radius:18px;padding:42px 48px;width:100%;max-width:440px;box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo .lic{font-size:52px;margin-bottom:8px}
+.login-logo h2{font-size:20px;font-weight:800;color:var(--primary)}
+.login-logo p{font-size:13px;color:var(--muted);margin-top:4px}
+.btn-login{width:100%;padding:12px;font-size:15px;border-radius:9px;margin-top:6px}
+.login-err{background:#fdedec;border:1px solid #f5b7b1;color:#922b21;border-radius:7px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
+.login-toggle{text-align:center;font-size:12px;color:var(--muted);margin-top:14px;cursor:pointer}
+.login-toggle a{color:var(--primary2);font-weight:600;cursor:pointer}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(255,255,255,.7);z-index:9998;display:none;align-items:center;justify-content:center}
+.loading-overlay.show{display:flex}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast-msg{background:#2c3e50;color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:slideIn .3s ease;max-width:320px}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.skel{background:linear-gradient(90deg,#f0f2f5 25%,#e8ecef 50%,#f0f2f5 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:6px;height:16px;margin-bottom:8px}
+@keyframes shimmer{to{background-position:-200% 0}}
+
+.config-step{margin-bottom:18px}
+.config-step h4{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:6px}
+.config-step p{font-size:12px;color:var(--muted);line-height:1.7}
+.config-step a{color:var(--primary2);text-decoration:underline}
+.config-code{background:#f8f9fa;border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'Courier New',monospace;font-size:11px;color:#922b21;display:block;margin-top:6px;word-break:break-all}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CONFIG SCREEN — لإعداد Firebase أول مرة
+═══════════════════════════════════════════════════════════════ -->
+<div id="config-screen" style="display:none;overflow-y:auto;padding:30px 0">
+  <div class="login-box" style="max-width:560px">
+    <div class="login-logo">
+      <div class="lic">⚙️</div>
+      <h2>إعداد Firebase</h2>
+      <p>الخطوة الأولى — اربط البرنامج بقاعدة البيانات</p>
+    </div>
+
+    <div style="background:#eaf4fc;border:1px solid #a9cce3;border-radius:8px;padding:12px;font-size:12px;color:#1a5276;margin-bottom:16px;line-height:1.7">
+      <strong>📋 خطوات إنشاء مشروع Firebase:</strong><br>
+      1. اذهب إلى <a href="https://console.firebase.google.com" target="_blank" style="color:#1a5276;text-decoration:underline"><strong>Firebase Console</strong></a><br>
+      2. <strong>Add Project</strong> → اختر اسم → Continue<br>
+      3. من القائمة: <strong>Build → Authentication</strong> → <strong>Get Started</strong> → فعّل <strong>Email/Password</strong><br>
+      4. من القائمة: <strong>Build → Firestore Database</strong> → <strong>Create database</strong> → اختر Production<br>
+      5. <strong>Project Settings (⚙️)</strong> → نزّل تحت → <strong>Add Web App (&lt;/&gt;)</strong> → سجّل التطبيق<br>
+      6. انسخ القيم من <code>firebaseConfig</code> والصقها هنا 👇
+    </div>
+
+    <div id="config-err" class="login-err"></div>
+
+    <div class="form-group">
+      <label class="form-lbl">apiKey *</label>
+      <input class="form-ctrl" id="cfg-apikey" placeholder="AIzaSy..." style="font-family:monospace;font-size:11px">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-lbl">authDomain *</label>
+        <input class="form-ctrl" id="cfg-authdomain" placeholder="xxx.firebaseapp.com" style="font-family:monospace;font-size:11px">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">projectId *</label>
+        <input class="form-ctrl" id="cfg-projectid" placeholder="my-project-id" style="font-family:monospace;font-size:11px">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-lbl">storageBucket</label>
+        <input class="form-ctrl" id="cfg-storage" placeholder="xxx.appspot.com" style="font-family:monospace;font-size:11px">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">messagingSenderId</label>
+        <input class="form-ctrl" id="cfg-msgid" placeholder="123456789" style="font-family:monospace;font-size:11px">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-lbl">appId *</label>
+      <input class="form-ctrl" id="cfg-appid" placeholder="1:123:web:abc..." style="font-family:monospace;font-size:11px">
+    </div>
+
+    <button class="btn btn-primary btn-login" onclick="saveConfig()">💾 حفظ الإعدادات والمتابعة</button>
+    <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px">
+      💡 الإعدادات تُحفظ محلياً في متصفحك فقط
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     LOGIN / REGISTER SCREEN
+═══════════════════════════════════════════════════════════════ -->
+<div id="login-screen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="lic">🏥</div>
+      <h2>MedTrack Pro</h2>
+      <p>نظام إدارة الأجهزة الطبية</p>
+    </div>
+
+    <div id="login-err" class="login-err"></div>
+
+    <!-- Login Form -->
+    <div id="login-form">
+      <div class="form-group">
+        <label class="form-lbl">البريد الإلكتروني</label>
+        <input type="email" id="inp-email" class="form-ctrl" placeholder="admin@hospital.sa" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">كلمة المرور</label>
+        <input type="password" id="inp-pass" class="form-ctrl" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn btn-primary btn-login" id="btn-login" onclick="doLogin()">🔐 تسجيل الدخول</button>
+      <p class="login-toggle">
+        ليس لديك حساب؟ <a onclick="toggleAuth('register')">إنشاء حساب جديد</a>
+      </p>
+    </div>
+
+    <!-- Register Form -->
+    <div id="register-form" style="display:none">
+      <div class="form-group">
+        <label class="form-lbl">الاسم الكامل</label>
+        <input type="text" id="reg-name" class="form-ctrl" placeholder="محمد أحمد">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">اسم المستشفى</label>
+        <input type="text" id="reg-hospital" class="form-ctrl" placeholder="مستشفى الملك فهد">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">البريد الإلكتروني</label>
+        <input type="email" id="reg-email" class="form-ctrl" placeholder="admin@hospital.sa">
+      </div>
+      <div class="form-group">
+        <label class="form-lbl">كلمة المرور (6+ أحرف)</label>
+        <input type="password" id="reg-pass" class="form-ctrl" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-login" id="btn-register" onclick="doRegister()">✨ إنشاء حساب</button>
+      <p class="login-toggle">
+        لديك حساب بالفعل؟ <a onclick="toggleAuth('login')">تسجيل الدخول</a>
+      </p>
+    </div>
+
+    <p style="text-align:center;font-size:11px;color:var(--muted);margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <a onclick="resetConfig()" style="color:var(--muted);cursor:pointer;text-decoration:underline">⚙️ إعادة إعداد Firebase</a>
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+<div id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════════════════════ -->
+<div id="app" style="display:none">
+  <div id="sidebar">
+    <div class="logo">
+      <div style="font-size:26px;margin-bottom:6px">🏥</div>
+      <h2>MedTrack Pro</h2>
+      <p id="sidebar-hospital">جارٍ التحميل...</p>
+    </div>
+    <div class="nav-section">
+      <div class="nav-lbl">الرئيسية</div>
+      <div class="nav-item active" onclick="go('dashboard')"><span class="ic">📊</span> لوحة التحكم</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-lbl">الأجهزة</div>
+      <div class="nav-item" onclick="go('devices')"><span class="ic">🖥️</span> الأجهزة الطبية</div>
+      <div class="nav-item" onclick="go('faults')"><span class="ic">🔧</span> الأعطال <span class="nav-badge" id="badge-faults">0</span></div>
+      <div class="nav-item" onclick="go('maintenance')"><span class="ic">🗓️</span> الصيانة</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-lbl">المخزون</div>
+      <div class="nav-item" onclick="go('parts')"><span class="ic">⚙️</span> قطع الغيار</div>
+    </div>
+    <div style="margin-top:auto;padding:16px">
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px">مسجّل الدخول</div>
+        <div style="color:#fff;font-size:13px;font-weight:600" id="sidebar-user">...</div>
+        <button onclick="doLogout()" style="margin-top:8px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">🚪 تسجيل الخروج</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="topbar">
+      <h1 id="page-title">لوحة التحكم</h1>
+      <button class="tb-btn" onclick="refreshCurrentPage()" title="تحديث">🔄</button>
+      <span id="user-name-display"></span>
+      <div class="avatar" id="user-avatar">م</div>
+    </div>
+    <div id="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid" id="dash-stats">
+          <div class="stat-card"><div class="skel"></div><div class="skel" style="width:60%"></div></div>
+          <div class="stat-card"><div class="skel"></div><div class="skel" style="width:60%"></div></div>
+          <div class="stat-card"><div class="skel"></div><div class="skel" style="width:60%"></div></div>
+          <div class="stat-card"><div class="skel"></div><div class="skel" style="width:60%"></div></div>
+        </div>
+        <div class="g2-1">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📊 حالة الأجهزة</span></div>
+            <div class="card-body"><div class="chart-box"><canvas id="ch-status"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">🔔 التنبيهات الحرجة</span></div>
+            <div class="card-body" id="dash-alerts"><div class="skel"></div><div class="skel"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">🚨 آخر الأعطال</span><button class="btn btn-outline btn-xs" onclick="go('faults')">عرض الكل</button></div>
+          <div class="card-body" id="dash-faults" style="padding-top:4px;padding-bottom:4px">
+            <div class="skel"></div><div class="skel"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEVICES -->
+      <div class="page" id="page-devices">
+        <div class="sec-hdr">
+          <div class="sec-title">🖥️ إدارة الأجهزة</div>
+          <button class="btn btn-primary" onclick="openModal('addDevice')">+ إضافة جهاز</button>
+        </div>
+        <div class="search-bar">
+          <input class="search-inp" id="dev-search" placeholder="🔍 ابحث..." oninput="loadDevices()">
+          <select class="filter-sel" id="dev-status" onchange="loadDevices()">
+            <option value="">كل الحالات</option>
+            <option value="active">يعمل</option>
+            <option value="stopped">متوقف</option>
+            <option value="maintenance">صيانة</option>
+          </select>
+          <select class="filter-sel" id="dev-dept" onchange="loadDevices()">
+            <option value="">كل الأقسام</option>
+            <option value="الأشعة">الأشعة</option>
+            <option value="الطوارئ">الطوارئ</option>
+            <option value="العيادات">العيادات</option>
+            <option value="العناية المركزة">العناية المركزة</option>
+            <option value="المختبر">المختبر</option>
+            <option value="العمليات">العمليات</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="exportDevicesCSV()">📥 تصدير CSV</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الجهاز</th><th>القسم</th><th>الرقم التسلسلي</th>
+                <th>الصانع</th><th>الضمان</th><th>الحالة</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="devices-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAULTS -->
+      <div class="page" id="page-faults">
+        <div class="sec-hdr">
+          <div class="sec-title">🔧 الأعطال</div>
+          <button class="btn btn-primary" onclick="openModal('addFault')">+ تسجيل عطل</button>
+        </div>
+        <div class="search-bar">
+          <select class="filter-sel" id="fault-status" onchange="loadFaults()">
+            <option value="">كل الحالات</option>
+            <option value="open">مفتوح</option>
+            <option value="in_progress">جاري</option>
+            <option value="resolved">محلول</option>
+          </select>
+          <select class="filter-sel" id="fault-severity" onchange="loadFaults()">
+            <option value="">كل الخطورة</option>
+            <option value="critical">حرجة</option>
+            <option value="high">عالية</option>
+            <option value="medium">متوسطة</option>
+            <option value="low">منخفضة</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>رقم العطل</th><th>الجهاز</th><th>القسم</th>
+                <th>الخطورة</th><th>الحالة</th><th>التاريخ</th><th>إجراء</th>
+              </tr></thead>
+              <tbody id="faults-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAINTENANCE -->
+      <div class="page" id="page-maintenance">
+        <div class="sec-hdr">
+          <div class="sec-title">🗓️ جدول الصيانة</div>
+          <button class="btn btn-primary" onclick="openModal('addMaintenance')">+ جدولة صيانة</button>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>رقم الأمر</th><th>الجهاز</th><th>النوع</th>
+                <th>تاريخ الصيانة</th><th>الفني</th><th>التكلفة المتوقعة</th><th>الحالة</th><th>إجراء</th>
+              </tr></thead>
+              <tbody id="maintenance-tbody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARTS -->
+      <div class="page" id="page-parts">
+        <div class="sec-hdr">
+          <div class="sec-title">⚙️ قطع الغيار</div>
+          <button class="btn btn-primary" onclick="openModal('addPart')">+ إضافة قطعة</button>
+        </div>
+        <div class="search-bar">
+          <input class="search-inp" id="part-search" placeholder="🔍 ابحث..." oninput="loadParts()">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="part-lowstock" onchange="loadParts()"> مخزون منخفض فقط
+          </label>
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>اسم القطعة</th><th>رقم القطعة</th><th>الكمية</th>
+                <th>الحد الأدنى</th><th>سعر الوحدة</th><th>الموّرد</th><th>إجراء</th>
+              </tr></thead>
+              <tbody id="parts-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MODALS
+═══════════════════════════════════════════════════════════════ -->
+
+<!-- Add Device -->
+<div class="modal-ov" id="modal-addDevice">
+  <div class="modal">
+    <div class="modal-hdr"><strong>➕ إضافة جهاز طبي</strong><button class="modal-close" onclick="closeModal('addDevice')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">اسم الجهاز *</label><input class="form-ctrl" id="dev-name" placeholder="جهاز الرنين المغناطيسي"></div>
+        <div class="form-group"><label class="form-lbl">الموديل</label><input class="form-ctrl" id="dev-model" placeholder="MRI 3T"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">الرقم التسلسلي *</label><input class="form-ctrl" id="dev-serial" placeholder="SN-2024-001"></div>
+        <div class="form-group"><label class="form-lbl">الشركة المصنعة</label><input class="form-ctrl" id="dev-manuf" placeholder="Siemens"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">القسم</label>
+          <select class="form-ctrl" id="dev-dept2">
+            <option value="">اختر القسم</option>
+            <option>الأشعة</option><option>الطوارئ</option><option>العيادات</option>
+            <option>العناية المركزة</option><option>المختبر</option><option>العمليات</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-lbl">الموقع</label><input class="form-ctrl" id="dev-location" placeholder="الطابق 2، غرفة 201"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">تاريخ الشراء</label><input type="date" class="form-ctrl" id="dev-purchase"></div>
+        <div class="form-group"><label class="form-lbl">انتهاء الضمان</label><input type="date" class="form-ctrl" id="dev-warranty"></div>
+      </div>
+      <div class="form-group"><label class="form-lbl">الموّرد</label><input class="form-ctrl" id="dev-supplier" placeholder="شركة الأجهزة الطبية"></div>
+      <div class="form-group"><label class="form-lbl">ملاحظات</label><textarea class="form-ctrl" id="dev-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addDevice')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveDevice()">💾 حفظ الجهاز</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Fault -->
+<div class="modal-ov" id="modal-addFault">
+  <div class="modal">
+    <div class="modal-hdr"><strong>🔴 تسجيل عطل جديد</strong><button class="modal-close" onclick="closeModal('addFault')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-lbl">الجهاز *</label>
+        <select class="form-ctrl" id="fault-device"><option value="">اختر الجهاز...</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">القسم</label><input class="form-ctrl" id="fault-dept" placeholder="القسم"></div>
+        <div class="form-group"><label class="form-lbl">درجة الخطورة</label>
+          <select class="form-ctrl" id="fault-sev">
+            <option value="low">منخفضة</option>
+            <option value="medium" selected>متوسطة</option>
+            <option value="high">عالية</option>
+            <option value="critical">حرجة</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-lbl">وصف العطل *</label><textarea class="form-ctrl" id="fault-desc" rows="3" placeholder="صف المشكلة..."></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addFault')">إلغاء</button>
+      <button class="btn btn-danger" onclick="saveFault()">🚨 تسجيل العطل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Maintenance -->
+<div class="modal-ov" id="modal-addMaintenance">
+  <div class="modal">
+    <div class="modal-hdr"><strong>🗓️ جدولة صيانة</strong><button class="modal-close" onclick="closeModal('addMaintenance')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-lbl">الجهاز *</label>
+        <select class="form-ctrl" id="mnt-device"><option value="">اختر الجهاز...</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">نوع الصيانة</label>
+          <select class="form-ctrl" id="mnt-type">
+            <option value="preventive">وقائية</option>
+            <option value="corrective">تصحيحية</option>
+            <option value="inspection">فحص</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-lbl">تاريخ الصيانة *</label><input type="date" class="form-ctrl" id="mnt-date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">الفني</label><input class="form-ctrl" id="mnt-tech" placeholder="اسم الفني"></div>
+        <div class="form-group"><label class="form-lbl">التكلفة المتوقعة (ريال)</label><input type="number" class="form-ctrl" id="mnt-cost" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label class="form-lbl">وصف العمل</label><textarea class="form-ctrl" id="mnt-desc" rows="2"></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addMaintenance')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveMaintenance()">📅 جدولة</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Part -->
+<div class="modal-ov" id="modal-addPart">
+  <div class="modal">
+    <div class="modal-hdr"><strong>⚙️ إضافة قطعة غيار</strong><button class="modal-close" onclick="closeModal('addPart')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">اسم القطعة *</label><input class="form-ctrl" id="part-name" placeholder="مضخة كولانت"></div>
+        <div class="form-group"><label class="form-lbl">رقم القطعة *</label><input class="form-ctrl" id="part-number" placeholder="CNT-0021"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">الكمية المتاحة</label><input type="number" class="form-ctrl" id="part-qty" placeholder="0" min="0"></div>
+        <div class="form-group"><label class="form-lbl">الحد الأدنى للتنبيه</label><input type="number" class="form-ctrl" id="part-min" placeholder="5" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">سعر الوحدة (ريال)</label><input type="number" class="form-ctrl" id="part-price" placeholder="0"></div>
+        <div class="form-group"><label class="form-lbl">الموّرد</label><input class="form-ctrl" id="part-sup" placeholder="اسم الموّرد"></div>
+      </div>
+      <div class="form-group"><label class="form-lbl">موقع التخزين</label><input class="form-ctrl" id="part-loc" placeholder="رف A، درج 3"></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addPart')">إلغاء</button>
+      <button class="btn btn-primary" onclick="savePart()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FIREBASE + APP LOGIC
+═══════════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc,
+  deleteDoc, query, where, orderBy, limit, serverTimestamp, Timestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ─── Globals ───
+let _app = null, _auth = null, _db = null, _user = null, _userData = null;
+let _devicesCache = [], _statusChart = null, _currentPage = 'dashboard';
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+function loadConfig() {
+  try { return JSON.parse(localStorage.getItem('mt_firebase_config') || 'null'); }
+  catch (e) { return null; }
+}
+
+window.saveConfig = function() {
+  const cfg = {
+    apiKey: document.getElementById('cfg-apikey').value.trim(),
+    authDomain: document.getElementById('cfg-authdomain').value.trim(),
+    projectId: document.getElementById('cfg-projectid').value.trim(),
+    storageBucket: document.getElementById('cfg-storage').value.trim(),
+    messagingSenderId: document.getElementById('cfg-msgid').value.trim(),
+    appId: document.getElementById('cfg-appid').value.trim(),
+  };
+
+  const errEl = document.getElementById('config-err');
+  errEl.style.display = 'none';
+
+  if (!cfg.apiKey || !cfg.authDomain || !cfg.projectId || !cfg.appId) {
+    errEl.textContent = '⚠️ apiKey, authDomain, projectId, appId مطلوبة';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  localStorage.setItem('mt_firebase_config', JSON.stringify(cfg));
+  toast('✅ تم حفظ الإعدادات', 'success');
+  setTimeout(() => location.reload(), 600);
+};
+
+window.resetConfig = function() {
+  if (!confirm('سيتم حذف إعدادات Firebase. متأكد؟')) return;
+  localStorage.removeItem('mt_firebase_config');
+  location.reload();
+};
+
+// ═══════════════════════════════════════════════════════════════
+// FIREBASE INIT
+// ═══════════════════════════════════════════════════════════════
+function initFirebase(config) {
+  _app = initializeApp(config);
+  _auth = getAuth(_app);
+  _db = getFirestore(_app);
+
+  onAuthStateChanged(_auth, async (user) => {
+    if (user) {
+      _user = user;
+      // جلب بيانات المستخدم من Firestore
+      try {
+        const udoc = await getDoc(doc(_db, 'users', user.uid));
+        _userData = udoc.exists() ? udoc.data() : { name: user.email, role: 'admin', hospitalName: 'مستشفى' };
+      } catch (e) {
+        _userData = { name: user.email, role: 'admin', hospitalName: 'مستشفى' };
+      }
+      showApp();
+    } else {
+      _user = null; _userData = null;
+      showLogin();
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UI HELPERS
+// ═══════════════════════════════════════════════════════════════
+function showConfig() {
+  document.getElementById('config-screen').style.display = 'flex';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showLogin() {
+  document.getElementById('config-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+function showApp() {
+  document.getElementById('config-screen').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  const name = _userData?.name || _user?.email?.split('@')[0] || 'مستخدم';
+  document.getElementById('user-name-display').textContent = name;
+  document.getElementById('user-avatar').textContent = name.charAt(0);
+  document.getElementById('sidebar-user').textContent = name;
+  document.getElementById('sidebar-hospital').textContent = _userData?.hospitalName || 'المستشفى';
+
+  loadDashboard();
+}
+
+function toast(msg, type = 'default') {
+  const el = document.createElement('div');
+  el.className = 'toast-msg';
+  if (type === 'error') el.style.background = '#c0392b';
+  if (type === 'success') el.style.background = '#27ae60';
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+window.toast = toast;
+
+function showLoading() { document.getElementById('loading').classList.add('show'); }
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+window.toggleAuth = function(mode) {
+  document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('login-err').style.display = 'none';
+};
+
+window.doLogin = async function() {
+  const email = document.getElementById('inp-email').value.trim();
+  const password = document.getElementById('inp-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('btn-login');
+
+  errEl.style.display = 'none';
+  if (!email || !password) {
+    errEl.textContent = 'أدخل البريد وكلمة المرور';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = '⏳ جارٍ التحقق...'; btn.disabled = true;
+  try {
+    await signInWithEmailAndPassword(_auth, email, password);
+    // onAuthStateChanged سيُشغّل showApp
+  } catch (e) {
+    let msg = 'خطأ في تسجيل الدخول';
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password' || e.code === 'auth/user-not-found') {
+      msg = 'البريد الإلكتروني أو كلمة المرور غير صحيحة';
+    } else if (e.code === 'auth/invalid-email') msg = 'البريد الإلكتروني غير صحيح';
+    else if (e.code === 'auth/too-many-requests') msg = 'محاولات كثيرة — حاول لاحقاً';
+    else if (e.code === 'auth/network-request-failed') msg = 'لا يوجد اتصال بالإنترنت';
+    errEl.textContent = msg; errEl.style.display = 'block';
+  }
+  btn.textContent = '🔐 تسجيل الدخول'; btn.disabled = false;
+};
+
+window.doRegister = async function() {
+  const name = document.getElementById('reg-name').value.trim();
+  const hospital = document.getElementById('reg-hospital').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-pass').value;
+  const errEl = document.getElementById('login-err');
+  const btn = document.getElementById('btn-register');
+
+  errEl.style.display = 'none';
+  if (!name || !email || password.length < 6) {
+    errEl.textContent = 'الاسم والبريد مطلوبان، وكلمة المرور 6 أحرف على الأقل';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.textContent = '⏳ جارٍ الإنشاء...'; btn.disabled = true;
+  try {
+    const cred = await createUserWithEmailAndPassword(_auth, email, password);
+    // حفظ بيانات المستخدم في Firestore
+    await setDoc(doc(_db, 'users', cred.user.uid), {
+      name, email, hospitalName: hospital,
+      role: 'admin', // أول مستخدم admin
+      active: true,
+      createdAt: new Date().toISOString(),
+    });
+    toast('✅ تم إنشاء الحساب', 'success');
+  } catch (e) {
+    let msg = 'خطأ في إنشاء الحساب';
+    if (e.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم بالفعل';
+    else if (e.code === 'auth/invalid-email') msg = 'البريد غير صحيح';
+    else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة';
+    errEl.textContent = msg; errEl.style.display = 'block';
+  }
+  btn.textContent = '✨ إنشاء حساب'; btn.disabled = false;
+};
+
+window.doLogout = async function() {
+  await signOut(_auth);
+  toast('تم تسجيل الخروج');
+};
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+window.go = function(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const pageEl = document.getElementById('page-' + page);
+  if (!pageEl) return;
+  pageEl.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.includes(getPageLabel(page))) n.classList.add('active');
+  });
+
+  _currentPage = page;
+  document.getElementById('page-title').textContent = getPageLabel(page);
+
+  if (page === 'dashboard') loadDashboard();
+  else if (page === 'devices') loadDevices();
+  else if (page === 'faults') loadFaults();
+  else if (page === 'maintenance') loadMaintenance();
+  else if (page === 'parts') loadParts();
+};
+
+function getPageLabel(p) {
+  return { dashboard: 'لوحة التحكم', devices: 'الأجهزة الطبية', faults: 'الأعطال', maintenance: 'جدول الصيانة', parts: 'قطع الغيار' }[p] || p;
+}
+
+window.refreshCurrentPage = function() { go(_currentPage); };
+
+// ═══════════════════════════════════════════════════════════════
+// MODALS
+// ═══════════════════════════════════════════════════════════════
+window.openModal = function(name) {
+  if (name === 'addFault') populateDeviceSelect('fault-device');
+  if (name === 'addMaintenance') populateDeviceSelect('mnt-device');
+  document.getElementById('modal-' + name).classList.add('open');
+};
+
+window.closeModal = function(name) {
+  document.getElementById('modal-' + name).classList.remove('open');
+};
+
+function populateDeviceSelect(selId) {
+  const sel = document.getElementById(selId);
+  sel.innerHTML = '<option value="">اختر الجهاز...</option>' +
+    _devicesCache.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    const [devSnap, faultSnap, mntSnap, partsSnap] = await Promise.all([
+      getDocs(collection(_db, 'devices')),
+      getDocs(collection(_db, 'faults')),
+      getDocs(collection(_db, 'maintenance')),
+      getDocs(collection(_db, 'parts')),
+    ]);
+
+    const devices = devSnap.docs.map(d => d.data());
+    const faults = faultSnap.docs.map(d => d.data());
+    const maintenance = mntSnap.docs.map(d => d.data());
+    const parts = partsSnap.docs.map(d => d.data());
+
+    const now = new Date();
+    const stats = {
+      total: devices.length,
+      active: devices.filter(d => d.status === 'active').length,
+      stopped: devices.filter(d => d.status === 'stopped').length,
+      maintenance: devices.filter(d => d.status === 'maintenance').length,
+      faultsOpen: faults.filter(f => f.status === 'open').length,
+      faultsThisMonth: faults.filter(f => {
+        const d = new Date(f.reportedAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).length,
+      mntCost: maintenance.filter(m => {
+        const d = new Date(m.createdAt);
+        return m.status === 'completed' && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).reduce((s, m) => s + (m.actualCost || 0), 0),
+      mntThisMonth: maintenance.filter(m => {
+        const d = new Date(m.createdAt);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).length,
+    };
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card" style="--sc:var(--success)">
+        <div class="stat-icon">🖥️</div>
+        <div class="stat-lbl">إجمالي الأجهزة</div>
+        <div class="stat-val">${stats.total}</div>
+        <div class="stat-sub">✅ ${stats.active} يعمل</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--accent)">
+        <div class="stat-icon">🔴</div>
+        <div class="stat-lbl">أجهزة متوقفة</div>
+        <div class="stat-val" style="color:var(--accent)">${stats.stopped}</div>
+        <div class="stat-sub">+ ${stats.maintenance} في صيانة</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--warn)">
+        <div class="stat-icon">🔧</div>
+        <div class="stat-lbl">أعطال مفتوحة</div>
+        <div class="stat-val" style="color:var(--warn)">${stats.faultsOpen}</div>
+        <div class="stat-sub">${stats.faultsThisMonth} هذا الشهر</div>
+      </div>
+      <div class="stat-card" style="--sc:var(--info)">
+        <div class="stat-icon">💰</div>
+        <div class="stat-lbl">تكلفة الصيانة (ريال)</div>
+        <div class="stat-val">${stats.mntCost.toLocaleString('ar')}</div>
+        <div class="stat-sub">${stats.mntThisMonth} أمر هذا الشهر</div>
+      </div>
+    `;
+
+    document.getElementById('badge-faults').textContent = stats.faultsOpen;
+
+    // Chart
+    if (_statusChart) _statusChart.destroy();
+    const ctx = document.getElementById('ch-status').getContext('2d');
+    _statusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['يعمل', 'متوقف', 'صيانة'],
+        datasets: [{ data: [stats.active, stats.stopped, stats.maintenance], backgroundColor: ['#27ae60', '#e84c3d', '#f39c12'], borderWidth: 0 }],
+      },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', rtl: true } } },
+    });
+
+    // Alerts
+    const alerts = [];
+    devices.forEach(d => {
+      if (!d.warrantyExpiry) return;
+      const days = Math.ceil((new Date(d.warrantyExpiry) - now) / 86400000);
+      if (days > 0 && days <= 30) alerts.push({ type: 'warn', msg: `ضمان "${d.name}" ينتهي خلال ${days} يوم`, ic: '⚠️' });
+    });
+    parts.forEach(p => {
+      if ((p.quantity || 0) <= (p.minQuantity || 5)) alerts.push({ type: 'danger', msg: `مخزون "${p.name}" وصل للحد الأدنى (${p.quantity})`, ic: '📦' });
+    });
+    faults.forEach(f => {
+      if (f.status === 'resolved' || f.status === 'closed') return;
+      const hours = (now - new Date(f.reportedAt)) / 3600000;
+      if (hours > 48) alerts.push({ type: 'warn', msg: `تأخر إصلاح ${f.faultNumber} أكثر من 48 ساعة`, ic: '🕐' });
+    });
+
+    const alertsEl = document.getElementById('dash-alerts');
+    alertsEl.innerHTML = alerts.length === 0
+      ? '<div class="alert a-success">✅ لا توجد تنبيهات حرجة</div>'
+      : alerts.slice(0, 6).map(a => `<div class="alert a-${a.type}">${a.ic} ${a.msg}</div>`).join('');
+
+    // Recent faults
+    const recent = faults.sort((a, b) => new Date(b.reportedAt) - new Date(a.reportedAt)).slice(0, 5);
+    const faultsEl = document.getElementById('dash-faults');
+    faultsEl.innerHTML = recent.length === 0
+      ? '<div class="empty-state"><div class="ei">✅</div><p>لا توجد أعطال مسجلة</p></div>'
+      : recent.map(f => `
+        <div class="fault-item">
+          <div class="fault-ic" style="background:${sevBg(f.severity)}">${sevIcon(f.severity)}</div>
+          <div class="fault-body">
+            <div class="fault-title">${f.deviceName || '—'}</div>
+            <div class="fault-meta">${f.department || ''} • ${timeAgo(f.reportedAt)}</div>
+          </div>
+          ${statusBadge(f.status)}
+        </div>`).join('');
+  } catch (e) {
+    console.error(e);
+    toast('خطأ في الداشبورد: ' + e.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DEVICES
+// ═══════════════════════════════════════════════════════════════
+window.loadDevices = async function() {
+  try {
+    const search = document.getElementById('dev-search')?.value?.toLowerCase() || '';
+    const status = document.getElementById('dev-status')?.value || '';
+    const dept = document.getElementById('dev-dept')?.value || '';
+
+    const snap = await getDocs(query(collection(_db, 'devices'), orderBy('createdAt', 'desc')));
+    let devices = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (status) devices = devices.filter(d => d.status === status);
+    if (dept) devices = devices.filter(d => d.department === dept);
+    if (search) devices = devices.filter(d =>
+      d.name?.toLowerCase().includes(search) ||
+      d.serialNumber?.toLowerCase().includes(search) ||
+      d.model?.toLowerCase().includes(search)
+    );
+
+    _devicesCache = devices;
+    const tbody = document.getElementById('devices-tbody');
+
+    if (!devices.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">🖥️</div><p>لا توجد أجهزة — أضف أول جهاز!</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = devices.map(d => `
+      <tr>
+        <td><strong>${d.name}</strong><div class="td-sub">${d.model || ''}</div></td>
+        <td>${d.department || '—'}</td>
+        <td><code style="font-size:11px;background:#f8f9fa;padding:2px 6px;border-radius:4px">${d.serialNumber}</code></td>
+        <td>${d.manufacturer || '—'}</td>
+        <td>${d.warrantyExpiry ? `<span style="color:${warrantyColor(d.warrantyExpiry)};font-size:12px">${d.warrantyExpiry}</span>` : '—'}</td>
+        <td>${devStatusBadge(d.status)}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-warn btn-xs" onclick="openFaultFor('${d.id}')">🔧 عطل</button>
+          <button class="btn btn-danger btn-xs" style="margin-right:4px" onclick="deleteDevice('${d.id}','${d.name.replace(/'/g, "\\'")}')">حذف</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    console.error(e); toast('خطأ: ' + e.message, 'error');
+  }
+};
+
+window.openFaultFor = function(id) {
+  openModal('addFault');
+  setTimeout(() => {
+    const sel = document.getElementById('fault-device');
+    for (let o of sel.options) if (o.value === id) o.selected = true;
+  }, 100);
+};
+
+window.saveDevice = async function() {
+  try {
+    const name = document.getElementById('dev-name').value.trim();
+    const serialNumber = document.getElementById('dev-serial').value.trim();
+    if (!name || !serialNumber) { toast('❌ الاسم والرقم التسلسلي مطلوبان', 'error'); return; }
+
+    // تحقق من تفرّد الرقم
+    const dup = await getDocs(query(collection(_db, 'devices'), where('serialNumber', '==', serialNumber)));
+    if (!dup.empty) { toast('❌ الرقم التسلسلي موجود بالفعل', 'error'); return; }
+
+    const now = new Date().toISOString();
+    await addDoc(collection(_db, 'devices'), {
+      name, serialNumber,
+      model: document.getElementById('dev-model').value.trim(),
+      manufacturer: document.getElementById('dev-manuf').value.trim(),
+      department: document.getElementById('dev-dept2').value,
+      location: document.getElementById('dev-location').value.trim(),
+      purchaseDate: document.getElementById('dev-purchase').value || null,
+      warrantyExpiry: document.getElementById('dev-warranty').value || null,
+      supplier: document.getElementById('dev-supplier').value.trim(),
+      notes: document.getElementById('dev-notes').value.trim(),
+      status: 'active',
+      faultCount: 0,
+      maintenanceCount: 0,
+      createdAt: now,
+      createdBy: _user.uid,
+    });
+
+    toast('✅ تم إضافة الجهاز', 'success');
+    closeModal('addDevice');
+    document.querySelectorAll('#modal-addDevice .form-ctrl').forEach(i => i.value = '');
+    loadDevices();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.deleteDevice = async function(id, name) {
+  if (!confirm(`حذف "${name}"؟`)) return;
+  try {
+    await deleteDoc(doc(_db, 'devices', id));
+    toast('تم الحذف', 'success');
+    loadDevices();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.exportDevicesCSV = function() {
+  if (!_devicesCache.length) { toast('لا توجد أجهزة'); return; }
+  let csv = '\uFEFFالاسم,الموديل,الرقم التسلسلي,الصانع,القسم,الحالة,تاريخ الشراء,انتهاء الضمان\n';
+  _devicesCache.forEach(d => {
+    csv += `"${d.name}","${d.model||''}","${d.serialNumber}","${d.manufacturer||''}","${d.department||''}","${d.status}","${d.purchaseDate||''}","${d.warrantyExpiry||''}"\n`;
+  });
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `devices-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('✅ تم التصدير', 'success');
+};
+
+// ═══════════════════════════════════════════════════════════════
+// FAULTS
+// ═══════════════════════════════════════════════════════════════
+window.loadFaults = async function() {
+  try {
+    const status = document.getElementById('fault-status')?.value || '';
+    const severity = document.getElementById('fault-severity')?.value || '';
+
+    const snap = await getDocs(query(collection(_db, 'faults'), orderBy('reportedAt', 'desc')));
+    let faults = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (status) faults = faults.filter(f => f.status === status);
+    if (severity) faults = faults.filter(f => f.severity === severity);
+
+    const tbody = document.getElementById('faults-tbody');
+    if (!faults.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">✅</div><p>لا توجد أعطال</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = faults.map(f => `
+      <tr>
+        <td><code style="font-size:11px">${f.faultNumber}</code></td>
+        <td><strong>${f.deviceName || '—'}</strong></td>
+        <td>${f.department || '—'}</td>
+        <td>${sevBadge(f.severity)}</td>
+        <td>${statusBadge(f.status)}</td>
+        <td><span style="font-size:12px">${timeAgo(f.reportedAt)}</span></td>
+        <td>${f.status !== 'resolved' ? `<button class="btn btn-success btn-xs" onclick="resolveFault('${f.id}')">✅ حل</button>` : '<span style="color:var(--success);font-size:12px">✅</span>'}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.saveFault = async function() {
+  try {
+    const sel = document.getElementById('fault-device');
+    const deviceId = sel.value;
+    const deviceName = sel.options[sel.selectedIndex]?.text || '';
+    const description = document.getElementById('fault-desc').value.trim();
+    if (!deviceId || !description) { toast('❌ الجهاز والوصف مطلوبان', 'error'); return; }
+
+    const now = new Date().toISOString();
+    await addDoc(collection(_db, 'faults'), {
+      faultNumber: 'FLT-' + Date.now().toString().slice(-6),
+      deviceId, deviceName,
+      department: document.getElementById('fault-dept').value.trim(),
+      severity: document.getElementById('fault-sev').value,
+      description,
+      status: 'open',
+      reportedAt: now,
+      reportedBy: _user.uid,
+      reportedByName: _userData?.name || _user.email,
+    });
+
+    // تحديث الجهاز
+    const devRef = doc(_db, 'devices', deviceId);
+    const devDoc = await getDoc(devRef);
+    if (devDoc.exists()) {
+      const sev = document.getElementById('fault-sev').value;
+      await updateDoc(devRef, {
+        faultCount: (devDoc.data().faultCount || 0) + 1,
+        ...(sev === 'critical' ? { status: 'stopped' } : {}),
+      });
+    }
+
+    toast('🚨 تم تسجيل العطل', 'success');
+    closeModal('addFault');
+    document.getElementById('fault-desc').value = '';
+    loadFaults();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.resolveFault = async function(id) {
+  const resolution = prompt('أدخل وصف الحل:');
+  if (resolution === null) return;
+  try {
+    await updateDoc(doc(_db, 'faults', id), {
+      status: 'resolved',
+      resolution,
+      resolvedAt: new Date().toISOString(),
+    });
+    toast('✅ تم حل العطل', 'success');
+    loadFaults();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// MAINTENANCE
+// ═══════════════════════════════════════════════════════════════
+window.loadMaintenance = async function() {
+  try {
+    const snap = await getDocs(query(collection(_db, 'maintenance'), orderBy('scheduledDate', 'asc')));
+    const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const tbody = document.getElementById('maintenance-tbody');
+    if (!records.length) {
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="ei">🗓️</div><p>لا توجد صيانة مجدولة</p></div></td></tr>';
+      return;
+    }
+
+    const typeMap = { preventive: 'وقائية', corrective: 'تصحيحية', inspection: 'فحص' };
+    tbody.innerHTML = records.map(m => `
+      <tr>
+        <td><code style="font-size:11px">${m.orderNum}</code></td>
+        <td><strong>${m.deviceName || '—'}</strong></td>
+        <td><span class="badge b-info">${typeMap[m.type] || m.type}</span></td>
+        <td>${m.scheduledDate}</td>
+        <td>${m.technician || '—'}</td>
+        <td>${(m.estimatedCost || 0).toLocaleString('ar')} ريال</td>
+        <td>${mntStatusBadge(m.status)}</td>
+        <td>${m.status !== 'completed' && m.status !== 'cancelled' ? `<button class="btn btn-success btn-xs" onclick="completeMnt('${m.id}','${m.deviceId}')">✅ إتمام</button>` : '—'}</td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.saveMaintenance = async function() {
+  try {
+    const sel = document.getElementById('mnt-device');
+    const deviceId = sel.value;
+    const scheduledDate = document.getElementById('mnt-date').value;
+    if (!deviceId || !scheduledDate) { toast('❌ الجهاز والتاريخ مطلوبان', 'error'); return; }
+
+    await addDoc(collection(_db, 'maintenance'), {
+      orderNum: 'MNT-' + Date.now().toString().slice(-6),
+      deviceId,
+      deviceName: sel.options[sel.selectedIndex]?.text || '',
+      type: document.getElementById('mnt-type').value,
+      scheduledDate,
+      technician: document.getElementById('mnt-tech').value.trim(),
+      estimatedCost: parseFloat(document.getElementById('mnt-cost').value) || 0,
+      actualCost: 0,
+      description: document.getElementById('mnt-desc').value.trim(),
+      status: 'scheduled',
+      createdAt: new Date().toISOString(),
+      createdBy: _user.uid,
+    });
+
+    // تحديث حالة الجهاز
+    await updateDoc(doc(_db, 'devices', deviceId), { status: 'maintenance' });
+
+    toast('📅 تمت الجدولة', 'success');
+    closeModal('addMaintenance');
+    loadMaintenance();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.completeMnt = async function(id, deviceId) {
+  const cost = prompt('التكلفة الفعلية (ريال):');
+  if (cost === null) return;
+  try {
+    await updateDoc(doc(_db, 'maintenance', id), {
+      status: 'completed',
+      actualCost: parseFloat(cost) || 0,
+      completedAt: new Date().toISOString(),
+    });
+    if (deviceId) await updateDoc(doc(_db, 'devices', deviceId), { status: 'active' });
+    toast('✅ تم إتمام الصيانة', 'success');
+    loadMaintenance();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PARTS
+// ═══════════════════════════════════════════════════════════════
+window.loadParts = async function() {
+  try {
+    const search = document.getElementById('part-search')?.value?.toLowerCase() || '';
+    const lowStock = document.getElementById('part-lowstock')?.checked;
+
+    const snap = await getDocs(query(collection(_db, 'parts'), orderBy('name')));
+    let parts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (lowStock) parts = parts.filter(p => (p.quantity || 0) <= (p.minQuantity || 5));
+    if (search) parts = parts.filter(p =>
+      p.name?.toLowerCase().includes(search) ||
+      p.partNumber?.toLowerCase().includes(search) ||
+      p.supplier?.toLowerCase().includes(search)
+    );
+
+    const tbody = document.getElementById('parts-tbody');
+    if (!parts.length) {
+      tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="ei">⚙️</div><p>لا توجد قطع غيار</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = parts.map(p => {
+      const pct = Math.min(100, Math.round((p.quantity / Math.max(p.minQuantity * 3, 1)) * 100));
+      const low = (p.quantity || 0) <= (p.minQuantity || 5);
+      return `
+      <tr>
+        <td><strong>${p.name}</strong></td>
+        <td><code style="font-size:11px;background:#f8f9fa;padding:2px 6px;border-radius:4px">${p.partNumber}</code></td>
+        <td>
+          <strong style="color:${low ? 'var(--accent)' : 'var(--success)'}">${p.quantity || 0}</strong>
+          <div class="prog" style="width:80px"><div class="prog-fill" style="width:${pct}%;background:${low ? 'var(--accent)' : 'var(--success)'}"></div></div>
+        </td>
+        <td>${p.minQuantity || 5}</td>
+        <td>${(p.unitPrice || 0).toLocaleString('ar')} ريال</td>
+        <td>${p.supplier || '—'}</td>
+        <td style="white-space:nowrap">
+          <button class="btn btn-success btn-xs" onclick="partTx('${p.id}','${p.name.replace(/'/g, "\\'")}','in')">+ استلام</button>
+          <button class="btn btn-warn btn-xs" style="margin-right:4px" onclick="partTx('${p.id}','${p.name.replace(/'/g, "\\'")}','out')">- صرف</button>
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.savePart = async function() {
+  try {
+    const name = document.getElementById('part-name').value.trim();
+    const partNumber = document.getElementById('part-number').value.trim();
+    if (!name || !partNumber) { toast('❌ الاسم والرقم مطلوبان', 'error'); return; }
+
+    await addDoc(collection(_db, 'parts'), {
+      name, partNumber,
+      quantity: parseInt(document.getElementById('part-qty').value) || 0,
+      minQuantity: parseInt(document.getElementById('part-min').value) || 5,
+      unitPrice: parseFloat(document.getElementById('part-price').value) || 0,
+      supplier: document.getElementById('part-sup').value.trim(),
+      location: document.getElementById('part-loc').value.trim(),
+      transactions: [],
+      createdAt: new Date().toISOString(),
+    });
+
+    toast('✅ تمت الإضافة', 'success');
+    closeModal('addPart');
+    loadParts();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.partTx = async function(id, name, type) {
+  const qty = prompt(`${type === 'in' ? 'كمية الاستلام' : 'كمية الصرف'} لـ "${name}":`);
+  if (!qty || isNaN(qty)) return;
+  const reason = prompt('السبب (اختياري):') || '';
+
+  try {
+    const ref = doc(_db, 'parts', id);
+    const docSnap = await getDoc(ref);
+    if (!docSnap.exists()) { toast('❌ غير موجود', 'error'); return; }
+
+    const part = docSnap.data();
+    const change = type === 'in' ? parseInt(qty) : -parseInt(qty);
+    const newQty = (part.quantity || 0) + change;
+
+    if (newQty < 0) { toast(`❌ الكمية المتاحة (${part.quantity}) أقل من المطلوب`, 'error'); return; }
+
+    const tx = { type, quantity: parseInt(qty), reason, by: _userData?.name || _user.email, at: new Date().toISOString() };
+    await updateDoc(ref, {
+      quantity: newQty,
+      transactions: [...(part.transactions || []).slice(-49), tx],
+    });
+
+    if (newQty <= (part.minQuantity || 5)) toast(`⚠️ "${name}" وصل للحد الأدنى!`, 'error');
+    else toast(`✅ الكمية الجديدة: ${newQty}`, 'success');
+    loadParts();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
+function sevBg(s) { return { critical: '#fdedec', high: '#fdedec', medium: '#fef9e7', low: '#eafaf1' }[s] || '#f2f3f4'; }
+function sevIcon(s) { return { critical: '🔴', high: '🔴', medium: '🟡', low: '🟢' }[s] || '⚪'; }
+function sevBadge(s) {
+  const m = { critical: ['b-danger', 'حرجة'], high: ['b-danger', 'عالية'], medium: ['b-warn', 'متوسطة'], low: ['b-success', 'منخفضة'] };
+  const [c, l] = m[s] || ['b-gray', s];
+  return `<span class="badge ${c}"><span class="bdot"></span>${l}</span>`;
+}
+function statusBadge(s) {
+  const m = { open: ['b-danger', 'مفتوح'], in_progress: ['b-warn', 'جاري'], resolved: ['b-success', 'محلول'], closed: ['b-gray', 'مغلق'] };
+  const [c, l] = m[s] || ['b-gray', s];
+  return `<span class="badge ${c}">${l}</span>`;
+}
+function devStatusBadge(s) {
+  const m = { active: ['b-success', '✅ يعمل'], stopped: ['b-danger', '🔴 متوقف'], maintenance: ['b-warn', '🔧 صيانة'] };
+  const [c, l] = m[s] || ['b-gray', s];
+  return `<span class="badge ${c}">${l}</span>`;
+}
+function mntStatusBadge(s) {
+  const m = { scheduled: ['b-info', '📅 مجدولة'], in_progress: ['b-warn', '🔧 جاري'], completed: ['b-success', '✅ مكتملة'], cancelled: ['b-gray', 'ملغاة'] };
+  const [c, l] = m[s] || ['b-gray', s];
+  return `<span class="badge ${c}">${l}</span>`;
+}
+function warrantyColor(date) {
+  const days = (new Date(date) - new Date()) / 86400000;
+  if (days < 0) return 'var(--accent)';
+  if (days <= 30) return 'var(--warn)';
+  return 'var(--success)';
+}
+function timeAgo(iso) {
+  const d = (Date.now() - new Date(iso)) / 1000;
+  if (d < 60) return 'الآن';
+  if (d < 3600) return `${Math.floor(d / 60)} دقيقة`;
+  if (d < 86400) return `${Math.floor(d / 3600)} ساعة`;
+  return `${Math.floor(d / 86400)} يوم`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// KEYBOARD
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-ov.open').forEach(m => m.classList.remove('open'));
+});
+
+document.getElementById('inp-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('reg-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doRegister(); });
+
+// ═══════════════════════════════════════════════════════════════
+// BOOTSTRAP
+// ═══════════════════════════════════════════════════════════════
+const cfg = loadConfig();
+if (!cfg) {
+  showConfig();
+} else {
+  try {
+    initFirebase(cfg);
+  } catch (e) {
+    console.error('Firebase init error:', e);
+    document.getElementById('config-err').textContent = '❌ خطأ في الإعدادات: ' + e.message;
+    document.getElementById('config-err').style.display = 'block';
+    showConfig();
+  }
+}
+</script>
+</body>
+</html>
