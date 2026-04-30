@@ -2165,13 +2165,6 @@ async function initFirebase() {
     _rtdb  = getDatabase(app);
     _auth  = getAuth(app);
 
-    // اختبار الاتصال بقراءة من قاعدة البيانات
-    try {
-      await get(ref(_rtdb, '.info/connected'));
-    } catch (testErr) {
-      throw new Error('فشل الاتصال بقاعدة البيانات — تحقق من databaseURL');
-    }
-
     /* attach to window */
     _fbRef    = (path) => ref(_rtdb, path);
     _fbSet    = set;
@@ -2193,23 +2186,18 @@ async function initFirebase() {
     initLicense();  // تشغيل البرنامج
     return true;
   } catch(e) {
-    console.error('Firebase error:', e.message);
+    console.error('❌ Firebase init error:', e);
+    console.error('Error details:', e.message);
     FB_MODE = 'offline';
     showModeIndicator('error');
 
-    // عرض رسالة خطأ واضحة للمستخدم
+    // إظهار رسالة خطأ خفيفة بدلاً من confirm مزعج
     setTimeout(() => {
-      const retry = confirm('❌ فشل الاتصال بـ Firebase\n\nالخطأ: ' + e.message + '\n\nهل تريد إعادة إعداد قاعدة البيانات؟');
-      if (retry) {
-        resetFirebaseConfig();
-      } else {
-        // العمل بالوضع المحلي
-        FB_MODE = 'offline';
-        showModeIndicator('offline');
-        initLicense();
-      }
-    }, 500);
+      toast('⚠️ فشل الاتصال بـ Firebase — البرنامج يعمل في الوضع المحلي');
+    }, 800);
 
+    // المتابعة بالعمل في الوضع المحلي
+    initLicense();
     return false;
   }
 }
@@ -2266,9 +2254,13 @@ function showModeIndicator(mode) {
       location.reload();
     };
   } else {
-    el.innerHTML = '❌ خطأ في Firebase <span style="opacity:.7;font-size:10px">⚙️</span>';
-    el.title = 'تحقق من الإعدادات';
-    el.onclick = () => resetFirebaseConfig();
+    el.innerHTML = '⚠️ Firebase معطّل — وضع محلي <span style="opacity:.7;font-size:10px">⚙️</span>';
+    el.title = 'تعذّر الاتصال بـ Firebase • اضغط للإصلاح';
+    el.onclick = () => {
+      if (confirm('⚠️ تعذّر الاتصال بـ Firebase\n\nالأسباب المحتملة:\n• إعدادات Firebase غير صحيحة\n• Realtime Database غير مفعّل\n• قواعد الأمان تمنع الوصول\n\nهل تريد إعادة إعداد قاعدة البيانات؟')) {
+        resetFirebaseConfig();
+      }
+    };
   }
   document.body.appendChild(el);
 }
