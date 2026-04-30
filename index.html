@@ -5,7 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MedTrack Pro — نظام إدارة الأجهزة الطبية</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🏥%3C/text%3E%3C/svg%3E">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+  // Fallback لـ Chart.js إذا فشل التحميل من CDN الأول
+  if (typeof Chart === 'undefined') {
+    document.write('<script src="https://unpkg.com/chart.js@4.4.1/dist/chart.umd.js"><\/script>');
+  }
+</script>
+<script>
+  // إذا فشلت كل الـ CDNs نُعطّل الرسوم البيانية بسلاسة
+  window.addEventListener('load', () => {
+    if (typeof Chart === 'undefined') {
+      window.Chart = function() {
+        console.warn('Chart.js not loaded — charts disabled');
+        return { destroy: () => {} };
+      };
+      window.Chart.prototype = {};
+    }
+  });
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -298,20 +316,37 @@ textarea.form-ctrl{resize:vertical}
       <div class="nav-item active" onclick="go('dashboard')"><span class="ic">📊</span> لوحة التحكم</div>
     </div>
     <div class="nav-section">
-      <div class="nav-lbl">الأجهزة</div>
-      <div class="nav-item" onclick="go('devices')"><span class="ic">🖥️</span> الأجهزة الطبية</div>
-      <div class="nav-item" onclick="go('faults')"><span class="ic">🔧</span> الأعطال <span class="nav-badge" id="badge-faults">0</span></div>
+      <div class="nav-lbl">إدارة الأصول</div>
+      <div class="nav-item" onclick="go('devices')"><span class="ic">🖥️</span> الأجهزة</div>
+      <div class="nav-item" onclick="go('faults')"><span class="ic">🔧</span> الأعطال <span class="nav-badge" id="badge-faults" style="display:none">0</span></div>
       <div class="nav-item" onclick="go('maintenance')"><span class="ic">🗓️</span> الصيانة</div>
+      <div class="nav-item" onclick="go('parts')"><span class="ic">⚙️</span> قطع الغيار <span class="nav-badge" id="badge-parts" style="background:#f39c12;display:none">0</span></div>
     </div>
     <div class="nav-section">
-      <div class="nav-lbl">المخزون</div>
-      <div class="nav-item" onclick="go('parts')"><span class="ic">⚙️</span> قطع الغيار</div>
+      <div class="nav-lbl">الإدارة</div>
+      <div class="nav-item" onclick="go('suppliers')"><span class="ic">🏢</span> الموردون</div>
+      <div class="nav-item" onclick="go('reports')"><span class="ic">📈</span> التقارير</div>
+      <div class="nav-item" onclick="go('users')"><span class="ic">👥</span> المستخدمون</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-lbl">أخرى</div>
+      <div class="nav-item" onclick="go('notifications')"><span class="ic">🔔</span> الإشعارات <span class="nav-badge" id="badge-notif" style="display:none">0</span></div>
+      <div class="nav-item" onclick="go('activity')"><span class="ic">📜</span> سجل الأحداث</div>
+      <div class="nav-item" onclick="go('settings')"><span class="ic">⚙️</span> الإعدادات</div>
     </div>
     <div style="margin-top:auto;padding:16px">
-      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px">
+      <div style="background:rgba(255,255,255,.06);border-radius:10px;padding:12px;margin-bottom:8px">
         <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:4px">مسجّل الدخول</div>
         <div style="color:#fff;font-size:13px;font-weight:600" id="sidebar-user">...</div>
+        <div style="color:rgba(255,255,255,.5);font-size:11px;margin-top:2px" id="sidebar-role">مدير النظام</div>
         <button onclick="doLogout()" style="margin-top:8px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;width:100%">🚪 تسجيل الخروج</button>
+      </div>
+      <div id="license-bar" style="background:rgba(39,174,96,.15);border:1px solid rgba(39,174,96,.3);border-radius:8px;padding:8px 10px;font-size:11px">
+        <div style="display:flex;align-items:center;gap:6px;color:#7dd3a0">
+          <span style="width:8px;height:8px;background:#27ae60;border-radius:50%;display:inline-block"></span>
+          <strong id="license-plan">شهر واحد</strong>
+        </div>
+        <div style="color:rgba(255,255,255,.5);margin-top:3px" id="license-expiry">ينتهي: --</div>
       </div>
     </div>
   </div>
@@ -467,6 +502,237 @@ textarea.form-ctrl{resize:vertical}
         </div>
       </div>
 
+      <!-- SUPPLIERS -->
+      <div class="page" id="page-suppliers">
+        <div class="sec-hdr">
+          <div class="sec-title">🏢 الموردون</div>
+          <button class="btn btn-primary" onclick="openModal('addSupplier')">+ إضافة مورّد</button>
+        </div>
+        <div class="search-bar">
+          <input class="search-inp" id="sup-search" placeholder="🔍 ابحث عن مورّد..." oninput="loadSuppliers()">
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>اسم الشركة</th><th>الشخص المسؤول</th><th>الجوال</th>
+                <th>البريد</th><th>التخصص</th><th>إجراء</th>
+              </tr></thead>
+              <tbody id="suppliers-tbody"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REPORTS -->
+      <div class="page" id="page-reports">
+        <div class="sec-hdr">
+          <div class="sec-title">📈 التقارير والإحصائيات</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px">
+          <div class="card" style="cursor:pointer" onclick="generateReport('devices')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">🖥️</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير الأجهزة</div>
+              <div style="font-size:11px;color:var(--muted)">قائمة كاملة بحالة الأجهزة</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="generateReport('faults')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">🔧</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير الأعطال</div>
+              <div style="font-size:11px;color:var(--muted)">تحليل الأعطال والحلول</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="generateReport('maintenance')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">🗓️</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير الصيانة</div>
+              <div style="font-size:11px;color:var(--muted)">عمليات الصيانة والتكاليف</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="generateReport('parts')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">⚙️</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير المخزون</div>
+              <div style="font-size:11px;color:var(--muted)">قطع الغيار والكميات</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="generateReport('costs')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">💰</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير التكاليف</div>
+              <div style="font-size:11px;color:var(--muted)">إجمالي تكاليف الصيانة</div>
+            </div>
+          </div>
+          <div class="card" style="cursor:pointer" onclick="generateReport('warranty')">
+            <div class="card-body" style="text-align:center;padding:24px">
+              <div style="font-size:36px;margin-bottom:8px">📅</div>
+              <div style="font-weight:700;margin-bottom:4px">تقرير الضمانات</div>
+              <div style="font-size:11px;color:var(--muted)">ضمانات قاربت على الانتهاء</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="g2-1">
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📊 الأعطال حسب القسم</span></div>
+            <div class="card-body"><div class="chart-box"><canvas id="ch-dept"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">📈 ملخص شهري</span></div>
+            <div class="card-body" id="monthly-summary">
+              <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="page" id="page-users">
+        <div class="sec-hdr">
+          <div class="sec-title">👥 إدارة المستخدمين</div>
+          <button class="btn btn-primary" onclick="openModal('addUser')">+ مستخدم جديد</button>
+        </div>
+        <div class="alert a-info">
+          ℹ️ ملاحظة: لا يمكن حذف المستخدمين من واجهة Firebase Auth مباشرة — اذهب إلى Firebase Console → Authentication لذلك.
+        </div>
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>الاسم</th><th>البريد الإلكتروني</th><th>الدور</th>
+                <th>تاريخ الإنشاء</th><th>الحالة</th><th>إجراء</th>
+              </tr></thead>
+              <tbody id="users-tbody"><tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">جارٍ التحميل...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS -->
+      <div class="page" id="page-notifications">
+        <div class="sec-hdr">
+          <div class="sec-title">🔔 الإشعارات</div>
+          <button class="btn btn-outline" onclick="markAllRead()">✅ تعليم الكل كمقروء</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="notif-list" style="padding:0">
+            <div style="padding:40px;text-align:center;color:var(--muted)">جارٍ التحميل...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG -->
+      <div class="page" id="page-activity">
+        <div class="sec-hdr">
+          <div class="sec-title">📜 سجل الأحداث</div>
+          <button class="btn btn-outline" onclick="loadActivity()">🔄 تحديث</button>
+        </div>
+        <div class="search-bar">
+          <select class="filter-sel" id="activity-type" onchange="loadActivity()">
+            <option value="">كل الأنواع</option>
+            <option value="device">الأجهزة</option>
+            <option value="fault">الأعطال</option>
+            <option value="maintenance">الصيانة</option>
+            <option value="part">قطع الغيار</option>
+            <option value="user">المستخدمون</option>
+          </select>
+        </div>
+        <div class="card">
+          <div class="card-body" id="activity-list" style="padding:0">
+            <div style="padding:40px;text-align:center;color:var(--muted)">جارٍ التحميل...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="page-settings">
+        <div class="sec-hdr">
+          <div class="sec-title">⚙️ الإعدادات</div>
+        </div>
+
+        <div class="grid2">
+          <!-- إعدادات المستشفى -->
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">🏥 إعدادات المستشفى</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-lbl">اسم المستشفى</label>
+                <input class="form-ctrl" id="set-hospital" placeholder="مستشفى ...">
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">العنوان</label>
+                <input class="form-ctrl" id="set-address" placeholder="المدينة، الحي">
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">رقم الهاتف</label>
+                <input class="form-ctrl" id="set-phone" placeholder="011-1234567">
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">البريد الإلكتروني</label>
+                <input class="form-ctrl" id="set-email" placeholder="info@hospital.sa">
+              </div>
+              <button class="btn btn-primary" onclick="saveHospitalSettings()">💾 حفظ</button>
+            </div>
+          </div>
+
+          <!-- إعدادات الحساب -->
+          <div class="card">
+            <div class="card-hdr"><span class="card-title">👤 إعدادات الحساب</span></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label class="form-lbl">الاسم</label>
+                <input class="form-ctrl" id="set-name" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">البريد الإلكتروني</label>
+                <input class="form-ctrl" id="set-userEmail" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">الدور</label>
+                <input class="form-ctrl" id="set-role" readonly>
+              </div>
+              <hr style="margin:14px 0;border:none;border-top:1px solid var(--border)">
+              <h4 style="font-size:13px;margin-bottom:10px">🔐 تغيير كلمة المرور</h4>
+              <div class="form-group">
+                <label class="form-lbl">كلمة المرور الحالية</label>
+                <input type="password" class="form-ctrl" id="set-oldpass">
+              </div>
+              <div class="form-group">
+                <label class="form-lbl">كلمة المرور الجديدة (6+ أحرف)</label>
+                <input type="password" class="form-ctrl" id="set-newpass">
+              </div>
+              <button class="btn btn-primary" onclick="changePassword()">🔐 تحديث كلمة المرور</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- إعدادات النظام -->
+        <div class="card">
+          <div class="card-hdr"><span class="card-title">🔧 إعدادات النظام</span></div>
+          <div class="card-body">
+            <div class="grid2">
+              <div>
+                <h4 style="font-size:13px;margin-bottom:10px">📊 معلومات النظام</h4>
+                <div style="font-size:12px;line-height:2;color:var(--muted)">
+                  <div>الإصدار: <strong style="color:var(--text)">v1.0.0</strong></div>
+                  <div>قاعدة البيانات: <strong style="color:var(--success)">Firebase Firestore ✅</strong></div>
+                  <div>الترخيص: <strong style="color:var(--text)" id="sys-license">شهر واحد</strong></div>
+                  <div>تاريخ الانتهاء: <strong style="color:var(--warn)" id="sys-expiry">--</strong></div>
+                </div>
+              </div>
+              <div>
+                <h4 style="font-size:13px;margin-bottom:10px">⚠️ منطقة الخطر</h4>
+                <button class="btn btn-warn btn-sm" onclick="exportAllData()" style="display:block;margin-bottom:8px;width:100%">📥 نسخ احتياطي (تصدير كل البيانات)</button>
+                <button class="btn btn-danger btn-sm" onclick="resetConfig()" style="display:block;width:100%">🔧 إعادة إعداد Firebase</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -597,6 +863,73 @@ textarea.form-ctrl{resize:vertical}
   </div>
 </div>
 
+<!-- Add Supplier -->
+<div class="modal-ov" id="modal-addSupplier">
+  <div class="modal">
+    <div class="modal-hdr"><strong>🏢 إضافة مورّد</strong><button class="modal-close" onclick="closeModal('addSupplier')">×</button></div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-lbl">اسم الشركة *</label><input class="form-ctrl" id="sup-name" placeholder="شركة الأجهزة الطبية"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">الشخص المسؤول</label><input class="form-ctrl" id="sup-contact" placeholder="أحمد محمد"></div>
+        <div class="form-group"><label class="form-lbl">المنصب</label><input class="form-ctrl" id="sup-position" placeholder="مدير المبيعات"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">رقم الجوال</label><input class="form-ctrl" id="sup-phone" placeholder="0501234567"></div>
+        <div class="form-group"><label class="form-lbl">رقم الهاتف</label><input class="form-ctrl" id="sup-tel" placeholder="011-1234567"></div>
+      </div>
+      <div class="form-group"><label class="form-lbl">البريد الإلكتروني</label><input class="form-ctrl" id="sup-email" placeholder="info@supplier.sa"></div>
+      <div class="form-group"><label class="form-lbl">الموقع الإلكتروني</label><input class="form-ctrl" id="sup-web" placeholder="www.supplier.sa"></div>
+      <div class="form-group"><label class="form-lbl">العنوان</label><input class="form-ctrl" id="sup-addr" placeholder="الرياض، حي ..."></div>
+      <div class="form-group"><label class="form-lbl">التخصص</label>
+        <select class="form-ctrl" id="sup-spec">
+          <option value="">اختر التخصص</option>
+          <option>أجهزة الأشعة</option>
+          <option>أجهزة المختبر</option>
+          <option>أجهزة العمليات</option>
+          <option>أجهزة العناية المركزة</option>
+          <option>قطع غيار</option>
+          <option>صيانة عامة</option>
+          <option>أخرى</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-lbl">ملاحظات</label><textarea class="form-ctrl" id="sup-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addSupplier')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveSupplier()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User -->
+<div class="modal-ov" id="modal-addUser">
+  <div class="modal">
+    <div class="modal-hdr"><strong>👤 إضافة مستخدم جديد</strong><button class="modal-close" onclick="closeModal('addUser')">×</button></div>
+    <div class="modal-body">
+      <div class="alert a-warn">
+        ⚠️ سيتم إنشاء حساب جديد في Firebase Authentication. تأكد من عدم استخدام البريد مرة أخرى.
+      </div>
+      <div class="form-group"><label class="form-lbl">الاسم الكامل *</label><input class="form-ctrl" id="usr-name" placeholder="محمد أحمد"></div>
+      <div class="form-group"><label class="form-lbl">البريد الإلكتروني *</label><input type="email" class="form-ctrl" id="usr-email" placeholder="user@hospital.sa"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-lbl">كلمة المرور *</label><input type="password" class="form-ctrl" id="usr-pass" placeholder="6 أحرف على الأقل"></div>
+        <div class="form-group"><label class="form-lbl">الدور</label>
+          <select class="form-ctrl" id="usr-role">
+            <option value="technician">فني صيانة</option>
+            <option value="supervisor">مشرف</option>
+            <option value="admin">مدير النظام</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-lbl">رقم الجوال (اختياري)</label><input class="form-ctrl" id="usr-phone" placeholder="0501234567"></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-outline" onclick="closeModal('addUser')">إلغاء</button>
+      <button class="btn btn-primary" onclick="saveUser()">👤 إنشاء المستخدم</button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════════════════════════════════
      FIREBASE + APP LOGIC
 ═══════════════════════════════════════════════════════════════ -->
@@ -604,7 +937,7 @@ textarea.form-ctrl{resize:vertical}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signOut, onAuthStateChanged
+  signOut, onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc, updateDoc,
@@ -703,9 +1036,92 @@ function showApp() {
   document.getElementById('user-name-display').textContent = name;
   document.getElementById('user-avatar').textContent = name.charAt(0);
   document.getElementById('sidebar-user').textContent = name;
-  document.getElementById('sidebar-hospital').textContent = _userData?.hospitalName || 'المستشفى';
+  document.getElementById('sidebar-hospital').textContent = _userData?.hospitalName || 'إدارة الأجهزة الطبية';
+
+  // عرض الدور
+  const roleMap = { admin: 'مدير النظام', supervisor: 'مشرف', technician: 'فني صيانة' };
+  document.getElementById('sidebar-role').textContent = roleMap[_userData?.role] || 'مستخدم';
+
+  // عرض الترخيص
+  updateLicenseBar();
+
+  // تحديث badges
+  updateBadges();
 
   loadDashboard();
+}
+
+async function updateLicenseBar() {
+  try {
+    // حساب تاريخ انتهاء الترخيص (شهر من تاريخ الإنشاء)
+    const createdAt = _userData?.createdAt ? new Date(_userData.createdAt) : new Date();
+    const expiry = new Date(createdAt);
+    expiry.setDate(expiry.getDate() + 30);
+
+    const daysLeft = Math.ceil((expiry - new Date()) / 86400000);
+    const expiryStr = expiry.toLocaleDateString('en-GB');
+
+    document.getElementById('license-plan').textContent = 'شهر واحد';
+    document.getElementById('license-expiry').textContent = `ينتهي: ${expiryStr}`;
+
+    const bar = document.getElementById('license-bar');
+    if (daysLeft < 0) {
+      bar.style.background = 'rgba(231, 76, 60, .15)';
+      bar.style.borderColor = 'rgba(231, 76, 60, .3)';
+      bar.querySelector('span:first-child').style.background = '#e74c3c';
+      bar.querySelector('strong').style.color = '#f5b7b1';
+    } else if (daysLeft <= 7) {
+      bar.style.background = 'rgba(243, 156, 18, .15)';
+      bar.style.borderColor = 'rgba(243, 156, 18, .3)';
+      bar.querySelector('span:first-child').style.background = '#f39c12';
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function updateBadges() {
+  try {
+    // Badge الأعطال المفتوحة
+    const faultSnap = await getDocs(query(collection(_db, 'faults'), where('status', '==', 'open')));
+    const faultBadge = document.getElementById('badge-faults');
+    if (faultSnap.size > 0) {
+      faultBadge.textContent = faultSnap.size;
+      faultBadge.style.display = 'inline-block';
+    } else {
+      faultBadge.style.display = 'none';
+    }
+
+    // Badge قطع الغيار المنخفضة
+    const partsSnap = await getDocs(collection(_db, 'parts'));
+    const lowParts = partsSnap.docs.filter(d => {
+      const p = d.data();
+      return (p.quantity || 0) <= (p.minQuantity || 5);
+    }).length;
+    const partsBadge = document.getElementById('badge-parts');
+    if (lowParts > 0) {
+      partsBadge.textContent = lowParts;
+      partsBadge.style.display = 'inline-block';
+    } else {
+      partsBadge.style.display = 'none';
+    }
+
+    // Badge الإشعارات غير المقروءة (استعلام مبسّط بدون index مركّب)
+    const notifSnap = await getDocs(query(
+      collection(_db, 'notifications'),
+      where('userId', '==', _user.uid)
+    ));
+    const unreadCount = notifSnap.docs.filter(d => d.data().read === false).length;
+    const notifBadge = document.getElementById('badge-notif');
+    if (unreadCount > 0) {
+      notifBadge.textContent = unreadCount;
+      notifBadge.style.display = 'inline-block';
+    } else {
+      notifBadge.style.display = 'none';
+    }
+  } catch (e) {
+    // قد تفشل لو المجموعات غير موجودة بعد — لا مشكلة
+  }
 }
 
 function toast(msg, type = 'default') {
@@ -824,10 +1240,28 @@ window.go = function(page) {
   else if (page === 'faults') loadFaults();
   else if (page === 'maintenance') loadMaintenance();
   else if (page === 'parts') loadParts();
+  else if (page === 'suppliers') loadSuppliers();
+  else if (page === 'reports') loadReports();
+  else if (page === 'users') loadUsers();
+  else if (page === 'notifications') loadNotifications();
+  else if (page === 'activity') loadActivity();
+  else if (page === 'settings') loadSettings();
 };
 
 function getPageLabel(p) {
-  return { dashboard: 'لوحة التحكم', devices: 'الأجهزة الطبية', faults: 'الأعطال', maintenance: 'جدول الصيانة', parts: 'قطع الغيار' }[p] || p;
+  return {
+    dashboard: 'لوحة التحكم',
+    devices: 'الأجهزة',
+    faults: 'الأعطال',
+    maintenance: 'الصيانة',
+    parts: 'قطع الغيار',
+    suppliers: 'الموردون',
+    reports: 'التقارير',
+    users: 'المستخدمون',
+    notifications: 'الإشعارات',
+    activity: 'سجل الأحداث',
+    settings: 'الإعدادات',
+  }[p] || p;
 }
 
 window.refreshCurrentPage = function() { go(_currentPage); };
@@ -1055,6 +1489,7 @@ window.saveDevice = async function() {
     });
 
     toast('✅ تم إضافة الجهاز', 'success');
+    await logActivity('device', 'added', { name, deviceName: name });
     closeModal('addDevice');
     document.querySelectorAll('#modal-addDevice .form-ctrl').forEach(i => i.value = '');
     loadDevices();
@@ -1150,6 +1585,18 @@ window.saveFault = async function() {
     }
 
     toast('🚨 تم تسجيل العطل', 'success');
+    await logActivity('fault', 'added', { deviceName, severity: document.getElementById('fault-sev').value });
+
+    // إنشاء إشعار للأعطال الحرجة
+    const sev = document.getElementById('fault-sev').value;
+    if (sev === 'critical' || sev === 'high') {
+      await createNotification(
+        `🚨 عطل ${sev === 'critical' ? 'حرج' : 'عالي الخطورة'} في "${deviceName}"`,
+        'danger'
+      );
+    }
+
+    updateBadges();
     closeModal('addFault');
     document.getElementById('fault-desc').value = '';
     loadFaults();
@@ -1166,6 +1613,8 @@ window.resolveFault = async function(id) {
       resolvedAt: new Date().toISOString(),
     });
     toast('✅ تم حل العطل', 'success');
+    await logActivity('fault', 'resolved', { resolution });
+    updateBadges();
     loadFaults();
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 };
@@ -1226,6 +1675,7 @@ window.saveMaintenance = async function() {
     await updateDoc(doc(_db, 'devices', deviceId), { status: 'maintenance' });
 
     toast('📅 تمت الجدولة', 'success');
+    await logActivity('maintenance', 'added', { deviceName: sel.options[sel.selectedIndex]?.text || '' });
     closeModal('addMaintenance');
     loadMaintenance();
   } catch (e) { toast('❌ ' + e.message, 'error'); }
@@ -1241,6 +1691,7 @@ window.completeMnt = async function(id, deviceId) {
       completedAt: new Date().toISOString(),
     });
     if (deviceId) await updateDoc(doc(_db, 'devices', deviceId), { status: 'active' });
+    await logActivity('maintenance', 'completed', { actualCost: parseFloat(cost) || 0 });
     toast('✅ تم إتمام الصيانة', 'success');
     loadMaintenance();
   } catch (e) { toast('❌ ' + e.message, 'error'); }
@@ -1337,8 +1788,14 @@ window.partTx = async function(id, name, type) {
       transactions: [...(part.transactions || []).slice(-49), tx],
     });
 
-    if (newQty <= (part.minQuantity || 5)) toast(`⚠️ "${name}" وصل للحد الأدنى!`, 'error');
-    else toast(`✅ الكمية الجديدة: ${newQty}`, 'success');
+    if (newQty <= (part.minQuantity || 5)) {
+      toast(`⚠️ "${name}" وصل للحد الأدنى!`, 'error');
+      await createNotification(`📦 مخزون "${name}" منخفض (${newQty} متبقية)`, 'warn');
+      updateBadges();
+    } else {
+      toast(`✅ الكمية الجديدة: ${newQty}`, 'success');
+    }
+    await logActivity('part', type === 'in' ? 'received' : 'dispensed', { name, quantity: parseInt(qty) });
     loadParts();
   } catch (e) { toast('❌ ' + e.message, 'error'); }
 };
@@ -1383,7 +1840,561 @@ function timeAgo(iso) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// KEYBOARD
+// ACTIVITY LOGGER
+// ═══════════════════════════════════════════════════════════════
+async function logActivity(type, action, details = {}) {
+  try {
+    await addDoc(collection(_db, 'activity'), {
+      type, // device | fault | maintenance | part | user | supplier
+      action, // added | updated | deleted | resolved | etc
+      details,
+      userId: _user.uid,
+      userName: _userData?.name || _user.email,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (e) {}
+}
+
+async function createNotification(message, type = 'info', forUserId = null) {
+  try {
+    await addDoc(collection(_db, 'notifications'), {
+      message,
+      type, // info | warn | danger | success
+      userId: forUserId || _user.uid,
+      read: false,
+      createdAt: new Date().toISOString(),
+    });
+  } catch (e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUPPLIERS
+// ═══════════════════════════════════════════════════════════════
+window.loadSuppliers = async function() {
+  try {
+    const search = document.getElementById('sup-search')?.value?.toLowerCase() || '';
+    const snap = await getDocs(query(collection(_db, 'suppliers'), orderBy('createdAt', 'desc')));
+    let suppliers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (search) suppliers = suppliers.filter(s =>
+      s.name?.toLowerCase().includes(search) ||
+      s.contactPerson?.toLowerCase().includes(search) ||
+      s.email?.toLowerCase().includes(search)
+    );
+
+    const tbody = document.getElementById('suppliers-tbody');
+    if (!suppliers.length) {
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="ei">🏢</div><p>لا يوجد موردون — أضف أول مورّد!</p></div></td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = suppliers.map(s => `
+      <tr>
+        <td><strong>${s.name}</strong>${s.position ? `<div class="td-sub">${s.position}</div>` : ''}</td>
+        <td>${s.contactPerson || '—'}</td>
+        <td>${s.phone ? `<a href="tel:${s.phone}" style="color:var(--primary2)">${s.phone}</a>` : '—'}</td>
+        <td>${s.email ? `<a href="mailto:${s.email}" style="color:var(--primary2);font-size:12px">${s.email}</a>` : '—'}</td>
+        <td>${s.specialty ? `<span class="badge b-info">${s.specialty}</span>` : '—'}</td>
+        <td><button class="btn btn-danger btn-xs" onclick="deleteSupplier('${s.id}','${(s.name||'').replace(/'/g, "\\'")}')">حذف</button></td>
+      </tr>
+    `).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.saveSupplier = async function() {
+  try {
+    const name = document.getElementById('sup-name').value.trim();
+    if (!name) { toast('❌ اسم الشركة مطلوب', 'error'); return; }
+
+    await addDoc(collection(_db, 'suppliers'), {
+      name,
+      contactPerson: document.getElementById('sup-contact').value.trim(),
+      position: document.getElementById('sup-position').value.trim(),
+      phone: document.getElementById('sup-phone').value.trim(),
+      tel: document.getElementById('sup-tel').value.trim(),
+      email: document.getElementById('sup-email').value.trim(),
+      website: document.getElementById('sup-web').value.trim(),
+      address: document.getElementById('sup-addr').value.trim(),
+      specialty: document.getElementById('sup-spec').value,
+      notes: document.getElementById('sup-notes').value.trim(),
+      createdAt: new Date().toISOString(),
+      createdBy: _user.uid,
+    });
+
+    await logActivity('supplier', 'added', { name });
+    toast('✅ تمت إضافة المورّد', 'success');
+    closeModal('addSupplier');
+    document.querySelectorAll('#modal-addSupplier .form-ctrl').forEach(i => i.value = '');
+    loadSuppliers();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.deleteSupplier = async function(id, name) {
+  if (!confirm(`حذف "${name}"؟`)) return;
+  try {
+    await deleteDoc(doc(_db, 'suppliers', id));
+    await logActivity('supplier', 'deleted', { name });
+    toast('تم الحذف', 'success');
+    loadSuppliers();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// REPORTS
+// ═══════════════════════════════════════════════════════════════
+let _deptChart = null;
+
+window.loadReports = async function() {
+  try {
+    // مخطط الأعطال حسب القسم
+    const faultSnap = await getDocs(collection(_db, 'faults'));
+    const deptCount = {};
+    faultSnap.docs.forEach(d => {
+      const dept = d.data().department || 'غير محدد';
+      deptCount[dept] = (deptCount[dept] || 0) + 1;
+    });
+
+    if (_deptChart) _deptChart.destroy();
+    const ctx = document.getElementById('ch-dept').getContext('2d');
+    _deptChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: Object.keys(deptCount),
+        datasets: [{
+          label: 'عدد الأعطال',
+          data: Object.values(deptCount),
+          backgroundColor: '#2471a3',
+          borderRadius: 4,
+        }],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+      },
+    });
+
+    // ملخص شهري
+    const now = new Date();
+    const [devSnap, mntSnap, partsSnap] = await Promise.all([
+      getDocs(collection(_db, 'devices')),
+      getDocs(collection(_db, 'maintenance')),
+      getDocs(collection(_db, 'parts')),
+    ]);
+
+    const thisMonthFaults = faultSnap.docs.filter(d => {
+      const date = new Date(d.data().reportedAt);
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    }).length;
+
+    const thisMonthMnt = mntSnap.docs.filter(d => {
+      const date = new Date(d.data().createdAt);
+      return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    });
+
+    const totalCost = thisMonthMnt.reduce((s, d) => s + (d.data().actualCost || 0), 0);
+    const partsValue = partsSnap.docs.reduce((s, d) => s + ((d.data().quantity || 0) * (d.data().unitPrice || 0)), 0);
+
+    document.getElementById('monthly-summary').innerHTML = `
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px">إجمالي الأجهزة</span>
+        <strong>${devSnap.size}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px">أعطال هذا الشهر</span>
+        <strong style="color:var(--accent)">${thisMonthFaults}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px">صيانة هذا الشهر</span>
+        <strong>${thisMonthMnt.length}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted);font-size:12px">تكلفة الصيانة</span>
+        <strong style="color:var(--info)">${totalCost.toLocaleString('ar')} ريال</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0">
+        <span style="color:var(--muted);font-size:12px">قيمة المخزون</span>
+        <strong style="color:var(--success)">${partsValue.toLocaleString('ar')} ريال</strong>
+      </div>
+    `;
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.generateReport = async function(type) {
+  try {
+    showLoading();
+    let data = [], filename = '', headers = [];
+
+    if (type === 'devices') {
+      const snap = await getDocs(collection(_db, 'devices'));
+      data = snap.docs.map(d => d.data());
+      headers = ['الاسم', 'الموديل', 'الرقم التسلسلي', 'الصانع', 'القسم', 'الحالة', 'الضمان'];
+      filename = 'devices-report';
+      data = data.map(d => [d.name, d.model||'', d.serialNumber, d.manufacturer||'', d.department||'', d.status, d.warrantyExpiry||'']);
+    } else if (type === 'faults') {
+      const snap = await getDocs(query(collection(_db, 'faults'), orderBy('reportedAt', 'desc')));
+      headers = ['الرقم', 'الجهاز', 'القسم', 'الخطورة', 'الحالة', 'الوصف', 'التاريخ'];
+      filename = 'faults-report';
+      data = snap.docs.map(d => {
+        const f = d.data();
+        return [f.faultNumber, f.deviceName||'', f.department||'', f.severity, f.status, f.description||'', new Date(f.reportedAt).toLocaleDateString('en-GB')];
+      });
+    } else if (type === 'maintenance') {
+      const snap = await getDocs(collection(_db, 'maintenance'));
+      headers = ['الرقم', 'الجهاز', 'النوع', 'التاريخ', 'الفني', 'التكلفة المتوقعة', 'التكلفة الفعلية', 'الحالة'];
+      filename = 'maintenance-report';
+      data = snap.docs.map(d => {
+        const m = d.data();
+        return [m.orderNum, m.deviceName||'', m.type, m.scheduledDate, m.technician||'', m.estimatedCost||0, m.actualCost||0, m.status];
+      });
+    } else if (type === 'parts') {
+      const snap = await getDocs(collection(_db, 'parts'));
+      headers = ['الاسم', 'رقم القطعة', 'الكمية', 'الحد الأدنى', 'سعر الوحدة', 'القيمة الإجمالية', 'الموّرد'];
+      filename = 'parts-report';
+      data = snap.docs.map(d => {
+        const p = d.data();
+        return [p.name, p.partNumber, p.quantity||0, p.minQuantity||5, p.unitPrice||0, (p.quantity||0)*(p.unitPrice||0), p.supplier||''];
+      });
+    } else if (type === 'costs') {
+      const snap = await getDocs(query(collection(_db, 'maintenance'), where('status', '==', 'completed')));
+      headers = ['الرقم', 'الجهاز', 'تاريخ الإتمام', 'التكلفة'];
+      filename = 'costs-report';
+      data = snap.docs.map(d => {
+        const m = d.data();
+        return [m.orderNum, m.deviceName||'', m.completedAt ? new Date(m.completedAt).toLocaleDateString('en-GB') : '', m.actualCost||0];
+      });
+    } else if (type === 'warranty') {
+      const snap = await getDocs(collection(_db, 'devices'));
+      const now = new Date();
+      headers = ['الاسم', 'الرقم التسلسلي', 'القسم', 'انتهاء الضمان', 'أيام متبقية'];
+      filename = 'warranty-report';
+      data = snap.docs
+        .map(d => d.data())
+        .filter(d => d.warrantyExpiry)
+        .map(d => {
+          const days = Math.ceil((new Date(d.warrantyExpiry) - now) / 86400000);
+          return [d.name, d.serialNumber, d.department||'', d.warrantyExpiry, days];
+        })
+        .sort((a, b) => a[4] - b[4]);
+    }
+
+    if (!data.length) { hideLoading(); toast('لا توجد بيانات للتصدير'); return; }
+
+    let csv = '\uFEFF' + headers.join(',') + '\n';
+    data.forEach(row => {
+      csv += row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',') + '\n';
+    });
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${filename}-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+
+    hideLoading();
+    toast(`✅ تم تصدير ${data.length} سجل`, 'success');
+  } catch (e) {
+    hideLoading();
+    toast('❌ ' + e.message, 'error');
+  }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════════════════════════
+window.loadUsers = async function() {
+  try {
+    const snap = await getDocs(query(collection(_db, 'users'), orderBy('createdAt', 'desc')));
+    const users = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    const tbody = document.getElementById('users-tbody');
+    if (!users.length) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">لا يوجد مستخدمون</td></tr>';
+      return;
+    }
+
+    const roleMap = { admin: ['b-danger', 'مدير النظام'], supervisor: ['b-warn', 'مشرف'], technician: ['b-info', 'فني صيانة'] };
+
+    tbody.innerHTML = users.map(u => {
+      const [cls, lbl] = roleMap[u.role] || ['b-gray', u.role];
+      return `
+      <tr>
+        <td><strong>${u.name}</strong>${u.id === _user.uid ? ' <span class="badge b-success" style="margin-right:6px">أنت</span>' : ''}</td>
+        <td><span style="font-size:12px">${u.email}</span></td>
+        <td><span class="badge ${cls}">${lbl}</span></td>
+        <td><span style="font-size:12px">${u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : '—'}</span></td>
+        <td><span class="badge ${u.active !== false ? 'b-success' : 'b-gray'}">${u.active !== false ? '✅ نشط' : '⏸️ معطل'}</span></td>
+        <td>
+          ${u.id !== _user.uid && _userData?.role === 'admin'
+            ? `<button class="btn btn-warn btn-xs" onclick="toggleUserActive('${u.id}',${u.active !== false})">${u.active !== false ? 'تعطيل' : 'تفعيل'}</button>`
+            : '—'}
+        </td>
+      </tr>`;
+    }).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.saveUser = async function() {
+  try {
+    const name = document.getElementById('usr-name').value.trim();
+    const email = document.getElementById('usr-email').value.trim();
+    const password = document.getElementById('usr-pass').value;
+    const role = document.getElementById('usr-role').value;
+    const phone = document.getElementById('usr-phone').value.trim();
+
+    if (!name || !email || password.length < 6) {
+      toast('❌ بيانات غير كاملة (كلمة المرور 6 أحرف على الأقل)', 'error');
+      return;
+    }
+
+    showLoading();
+    // ⚠️ ملاحظة: createUserWithEmailAndPassword يسجّل المستخدم الجديد تلقائياً
+    // وهذه قيود Firebase Auth Client SDK — للحلّ الأمثل يحتاج Cloud Function
+    const cred = await createUserWithEmailAndPassword(_auth, email, password);
+
+    await setDoc(doc(_db, 'users', cred.user.uid), {
+      name, email, role, phone,
+      hospitalName: _userData?.hospitalName || '',
+      active: true,
+      createdAt: new Date().toISOString(),
+      createdBy: _user.uid,
+    });
+
+    await logActivity('user', 'added', { name, email, role });
+    hideLoading();
+
+    toast('✅ تم إنشاء المستخدم — قد تحتاج لتسجيل الدخول مجدداً', 'success');
+    closeModal('addUser');
+    document.querySelectorAll('#modal-addUser .form-ctrl').forEach(i => { if (i.tagName !== 'SELECT') i.value = ''; });
+
+    // Firebase ينقل الجلسة للمستخدم الجديد — نحتاج لإعادة تسجيل دخول
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) {
+    hideLoading();
+    let msg = e.message;
+    if (e.code === 'auth/email-already-in-use') msg = 'البريد الإلكتروني مستخدم بالفعل';
+    else if (e.code === 'auth/weak-password') msg = 'كلمة المرور ضعيفة';
+    toast('❌ ' + msg, 'error');
+  }
+};
+
+window.toggleUserActive = async function(uid, currentActive) {
+  if (!confirm(currentActive ? 'تعطيل هذا المستخدم؟' : 'تفعيل هذا المستخدم؟')) return;
+  try {
+    await updateDoc(doc(_db, 'users', uid), { active: !currentActive });
+    toast('✅ تم التحديث', 'success');
+    loadUsers();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════════════════════════
+window.loadNotifications = async function() {
+  try {
+    // استعلام مبسّط: نجلب الإشعارات حسب userId فقط، ثم نفرز محلياً
+    const snap = await getDocs(query(
+      collection(_db, 'notifications'),
+      where('userId', '==', _user.uid),
+      limit(50)
+    ));
+
+    let notifs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // فرز يدوي محلياً (الأحدث أولاً)
+    notifs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const list = document.getElementById('notif-list');
+
+    if (!notifs.length) {
+      list.innerHTML = '<div class="empty-state"><div class="ei">🔔</div><p>لا توجد إشعارات</p></div>';
+      return;
+    }
+
+    const typeMap = {
+      info: { ic: 'ℹ️', color: 'var(--info)' },
+      warn: { ic: '⚠️', color: 'var(--warn)' },
+      danger: { ic: '🚨', color: 'var(--accent)' },
+      success: { ic: '✅', color: 'var(--success)' },
+    };
+
+    list.innerHTML = notifs.map(n => {
+      const t = typeMap[n.type] || typeMap.info;
+      return `
+      <div style="display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);background:${n.read ? '#fafbfc' : '#fff'};${n.read ? 'opacity:.7' : ''}">
+        <div style="width:38px;height:38px;border-radius:10px;background:${t.color}22;color:${t.color};display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${t.ic}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:${n.read ? '500' : '600'};margin-bottom:4px">${n.message}</div>
+          <div style="font-size:11px;color:var(--muted)">${timeAgo(n.createdAt)}</div>
+        </div>
+        ${!n.read ? `<button class="btn btn-outline btn-xs" onclick="markRead('${n.id}')">تعليم كمقروء</button>` : ''}
+      </div>`;
+    }).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+window.markRead = async function(id) {
+  try {
+    await updateDoc(doc(_db, 'notifications', id), { read: true });
+    loadNotifications();
+    updateBadges();
+  } catch (e) {}
+};
+
+window.markAllRead = async function() {
+  try {
+    const snap = await getDocs(query(
+      collection(_db, 'notifications'),
+      where('userId', '==', _user.uid)
+    ));
+    const unread = snap.docs.filter(d => d.data().read === false);
+    await Promise.all(unread.map(d => updateDoc(d.ref, { read: true })));
+    toast('✅ تم تعليم الكل كمقروء', 'success');
+    loadNotifications();
+    updateBadges();
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// ACTIVITY LOG
+// ═══════════════════════════════════════════════════════════════
+window.loadActivity = async function() {
+  try {
+    const type = document.getElementById('activity-type')?.value || '';
+    const snap = await getDocs(query(collection(_db, 'activity'), orderBy('timestamp', 'desc'), limit(100)));
+    let activities = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    if (type) activities = activities.filter(a => a.type === type);
+
+    const list = document.getElementById('activity-list');
+    if (!activities.length) {
+      list.innerHTML = '<div class="empty-state"><div class="ei">📜</div><p>لا توجد أحداث مسجلة</p></div>';
+      return;
+    }
+
+    const typeIcons = {
+      device: '🖥️', fault: '🔧', maintenance: '🗓️',
+      part: '⚙️', user: '👤', supplier: '🏢',
+    };
+    const actionMap = {
+      added: 'أضاف', updated: 'حدّث', deleted: 'حذف',
+      resolved: 'حلّ', completed: 'أتمّ',
+    };
+
+    list.innerHTML = activities.map(a => {
+      const ic = typeIcons[a.type] || '📌';
+      const action = actionMap[a.action] || a.action;
+      const detailText = a.details?.name || a.details?.deviceName || '';
+      return `
+      <div style="display:flex;gap:12px;padding:12px 18px;border-bottom:1px solid var(--border)">
+        <div style="width:34px;height:34px;border-radius:50%;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">${ic}</div>
+        <div style="flex:1">
+          <div style="font-size:13px"><strong>${a.userName}</strong> ${action} ${detailText ? `"${detailText}"` : ''}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${timeAgo(a.timestamp)} • ${new Date(a.timestamp).toLocaleString('en-GB')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { console.error(e); toast('خطأ: ' + e.message, 'error'); }
+};
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════════════════════
+window.loadSettings = async function() {
+  try {
+    // معلومات الحساب
+    document.getElementById('set-name').value = _userData?.name || '';
+    document.getElementById('set-userEmail').value = _user.email;
+    const roleMap = { admin: 'مدير النظام', supervisor: 'مشرف', technician: 'فني صيانة' };
+    document.getElementById('set-role').value = roleMap[_userData?.role] || 'مستخدم';
+
+    // إعدادات المستشفى
+    const settingsDoc = await getDoc(doc(_db, 'settings', 'hospital'));
+    if (settingsDoc.exists()) {
+      const s = settingsDoc.data();
+      document.getElementById('set-hospital').value = s.name || '';
+      document.getElementById('set-address').value = s.address || '';
+      document.getElementById('set-phone').value = s.phone || '';
+      document.getElementById('set-email').value = s.email || '';
+    } else {
+      document.getElementById('set-hospital').value = _userData?.hospitalName || '';
+    }
+
+    // معلومات الترخيص
+    const createdAt = _userData?.createdAt ? new Date(_userData.createdAt) : new Date();
+    const expiry = new Date(createdAt);
+    expiry.setDate(expiry.getDate() + 30);
+    document.getElementById('sys-license').textContent = 'شهر واحد';
+    document.getElementById('sys-expiry').textContent = expiry.toLocaleDateString('en-GB');
+  } catch (e) { console.error(e); }
+};
+
+window.saveHospitalSettings = async function() {
+  try {
+    await setDoc(doc(_db, 'settings', 'hospital'), {
+      name: document.getElementById('set-hospital').value.trim(),
+      address: document.getElementById('set-address').value.trim(),
+      phone: document.getElementById('set-phone').value.trim(),
+      email: document.getElementById('set-email').value.trim(),
+      updatedAt: new Date().toISOString(),
+      updatedBy: _user.uid,
+    });
+    toast('✅ تم حفظ الإعدادات', 'success');
+    document.getElementById('sidebar-hospital').textContent = document.getElementById('set-hospital').value.trim() || 'المستشفى';
+  } catch (e) { toast('❌ ' + e.message, 'error'); }
+};
+
+window.changePassword = async function() {
+  const oldPass = document.getElementById('set-oldpass').value;
+  const newPass = document.getElementById('set-newpass').value;
+
+  if (!oldPass || !newPass) { toast('❌ أدخل كلمتي المرور', 'error'); return; }
+  if (newPass.length < 6) { toast('❌ كلمة المرور الجديدة 6 أحرف على الأقل', 'error'); return; }
+
+  try {
+    showLoading();
+    // إعادة المصادقة
+    const credential = EmailAuthProvider.credential(_user.email, oldPass);
+    await reauthenticateWithCredential(_user, credential);
+    await updatePassword(_user, newPass);
+
+    hideLoading();
+    toast('✅ تم تحديث كلمة المرور', 'success');
+    document.getElementById('set-oldpass').value = '';
+    document.getElementById('set-newpass').value = '';
+  } catch (e) {
+    hideLoading();
+    let msg = 'خطأ في تحديث كلمة المرور';
+    if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') msg = 'كلمة المرور الحالية غير صحيحة';
+    else if (e.code === 'auth/weak-password') msg = 'كلمة المرور الجديدة ضعيفة';
+    toast('❌ ' + msg, 'error');
+  }
+};
+
+window.exportAllData = async function() {
+  try {
+    showLoading();
+    const collections = ['devices', 'faults', 'maintenance', 'parts', 'suppliers', 'users', 'activity'];
+    const backup = { exportedAt: new Date().toISOString(), data: {} };
+
+    for (const col of collections) {
+      const snap = await getDocs(collection(_db, col));
+      backup.data[col] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `medtrack-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+
+    hideLoading();
+    toast('✅ تم تصدير النسخة الاحتياطية', 'success');
+  } catch (e) {
+    hideLoading();
+    toast('❌ ' + e.message, 'error');
+  }
+};
+
 // ═══════════════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.querySelectorAll('.modal-ov.open').forEach(m => m.classList.remove('open'));
