@@ -69,7 +69,7 @@ final class PermissionMiddleware implements MiddlewareInterface
 
         $this->session->flash('error', 'You do not have permission to access this resource.');
         return $response->status(403)->body(
-            $this->view->render('errors/403', ['auth' => $this->auth], 'layouts/app')
+            $this->view->render('errors/403', ['title' => 'Access Denied'], 'layouts/blank')
         );
     }
 }
