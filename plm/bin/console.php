@@ -115,6 +115,31 @@ try {
             }
             break;
 
+        case 'apikey:create':
+            $name = $argv[2] ?? 'default';
+            $apiKeys = new \App\Models\ApiKey();
+            $key    = 'plm_' . bin2hex(random_bytes(16));
+            $secret = bin2hex(random_bytes(24));
+            $apiKeys->create([
+                'name'        => $name,
+                'api_key'     => $key,
+                'secret_hash' => password_hash($secret, PASSWORD_DEFAULT),
+                'scopes'      => json_encode(['licenses:activate', 'licenses:verify', 'licenses:deactivate']),
+                'is_active'   => 1,
+            ]);
+            $out('API key created (store the secret now — it is not shown again):');
+            $out('  Name       : ' . $name);
+            $out('  X-API-Key  : ' . $key);
+            $out('  API Secret : ' . $secret);
+            break;
+
+        case 'apikey:list':
+            $apiKeys = new \App\Models\ApiKey();
+            foreach ($apiKeys->all('id ASC') as $row) {
+                $out(sprintf('  #%d  %-20s  %s  %s', $row['id'], $row['name'], $row['api_key'], $row['is_active'] ? 'active' : 'disabled'));
+            }
+            break;
+
         case 'help':
         default:
             $out('Prima License Manager Console');
@@ -127,6 +152,8 @@ try {
             $out('  licenses:expire    Mark overdue licenses as expired');
             $out('  notify:renewals    Generate renewal notifications');
             $out('  keys:generate      Generate RSA key pair (if missing)');
+            $out('  apikey:create [n]  Create an API key/secret for online integration');
+            $out('  apikey:list        List API keys');
             break;
     }
     exit(0);
