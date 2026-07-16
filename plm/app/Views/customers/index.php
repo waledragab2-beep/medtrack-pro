@@ -12,17 +12,17 @@
     <div class="card-body">
         <div class="data-toolbar">
             <form class="d-flex gap-2 flex-wrap" method="get" action="<?= url('customers') ?>">
-                <input type="search" name="q" class="form-control" placeholder="Search customers…" value="<?= e($term) ?>">
+                <input type="search" name="q" class="form-control" placeholder="<?= e(__('Search customers…')) ?>" value="<?= e($term) ?>">
                 <select name="status" class="form-select">
                     <?php foreach (['all' => 'All Statuses', 'active' => 'Active', 'inactive' => 'Inactive', 'suspended' => 'Suspended'] as $k => $v): ?>
-                        <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= e($v) ?></option>
+                        <option value="<?= $k ?>" <?= $status === $k ? 'selected' : '' ?>><?= e(__($v)) ?></option>
                     <?php endforeach; ?>
                 </select>
-                <button class="btn btn-primary">Filter</button>
+                <button class="btn btn-primary"><?= e(__('Filter')) ?></button>
             </form>
             <div class="ms-auto">
                 <?php if ($auth->can('customers.manage')): ?>
-                    <a href="<?= url('customers/create') ?>" class="btn btn-primary">+ New Customer</a>
+                    <a href="<?= url('customers/create') ?>" class="btn btn-primary"><?= e(__('+ New Customer')) ?></a>
                 <?php endif; ?>
             </div>
         </div>
@@ -30,7 +30,7 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
-                    <tr><th>Company</th><th>Contact</th><th>Email</th><th>Country</th><th>Status</th><th class="text-end">Actions</th></tr>
+                    <tr><th><?= e(__('Company')) ?></th><th><?= e(__('Contact')) ?></th><th><?= e(__('Email')) ?></th><th><?= e(__('Country')) ?></th><th><?= e(__('Status')) ?></th><th class="text-end"><?= e(__('Actions')) ?></th></tr>
                 </thead>
                 <tbody>
                     <?php foreach ($result['data'] as $c): ?>
@@ -39,17 +39,17 @@
                         <td><?= e($c['contact_person'] ?: '—') ?></td>
                         <td><?= e($c['email'] ?: '—') ?></td>
                         <td><?= e($c['country'] ?: '—') ?></td>
-                        <td><span class="badge <?= status_badge($c['status']) ?>"><?= e(ucfirst($c['status'])) ?></span></td>
+                        <td><span class="badge <?= status_badge($c['status']) ?>"><?= e(__(ucfirst($c['status']))) ?></span></td>
                         <td class="text-end">
-                            <a href="<?= url('customers/' . $c['id']) ?>" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a href="<?= url('customers/' . $c['id']) ?>" class="btn btn-sm btn-outline-secondary"><?= e(__('View')) ?></a>
                             <?php if ($auth->can('customers.manage')): ?>
-                                <a href="<?= url('customers/' . $c['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a href="<?= url('customers/' . $c['id'] . '/edit') ?>" class="btn btn-sm btn-outline-primary"><?= e(__('Edit')) ?></a>
                             <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
                     <?php if ($result['data'] === []): ?>
-                        <tr><td colspan="6" class="empty-state">No customers found.</td></tr>
+                        <tr><td colspan="6" class="empty-state"><?= e(__('No customers found.')) ?></td></tr>
                     <?php endif; ?>
                 </tbody>
             </table>

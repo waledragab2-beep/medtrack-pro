@@ -14,7 +14,7 @@
     <div class="card-body">
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead><tr><th>Device</th><th>Customer</th><th>License</th><th>Hardware Hash</th><th>Activated</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+                <thead><tr><th><?= e(__('Device')) ?></th><th><?= e(__('Customer')) ?></th><th><?= e(__('License')) ?></th><th><?= e(__('Hardware Hash')) ?></th><th><?= e(__('Activated')) ?></th><th><?= e(__('Status')) ?></th><th class="text-end"><?= e(__('Actions')) ?></th></tr></thead>
                 <tbody>
                     <?php foreach ($devices as $d): ?>
                     <tr>
@@ -23,20 +23,20 @@
                         <td><a href="<?= url('licenses/' . $d['license_id']) ?>" class="mono text-decoration-none"><?= e($d['license_number']) ?></a></td>
                         <td><span class="mono" title="<?= e($d['hardware_hash']) ?>"><?= e(substr($d['hardware_hash'], 0, 20)) ?>…</span></td>
                         <td><?= human_date($d['activated_at'], 'Y-m-d H:i') ?></td>
-                        <td><span class="badge <?= status_badge($d['status']) ?>"><?= e(ucfirst($d['status'])) ?></span></td>
+                        <td><span class="badge <?= status_badge($d['status']) ?>"><?= e(__(ucfirst($d['status']))) ?></span></td>
                         <td class="text-end">
                             <?php if ($auth->can('devices.manage')): ?>
                                 <?php if ($d['status'] === 'active'): ?>
-                                    <form method="post" action="<?= url('devices/' . $d['id'] . '/block') ?>" class="d-inline"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-warning">Block</button></form>
+                                    <form method="post" action="<?= url('devices/' . $d['id'] . '/block') ?>" class="d-inline"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-warning"><?= e(__('Block')) ?></button></form>
                                 <?php else: ?>
-                                    <form method="post" action="<?= url('devices/' . $d['id'] . '/unblock') ?>" class="d-inline"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-success">Unblock</button></form>
+                                    <form method="post" action="<?= url('devices/' . $d['id'] . '/unblock') ?>" class="d-inline"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-success"><?= e(__('Unblock')) ?></button></form>
                                 <?php endif; ?>
-                                <form method="post" action="<?= url('devices/' . $d['id'] . '/delete') ?>" class="d-inline" data-confirm="Remove this device?"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-danger">Remove</button></form>
+                                <form method="post" action="<?= url('devices/' . $d['id'] . '/delete') ?>" class="d-inline" data-confirm="Remove this device?"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-danger"><?= e(__('Remove')) ?></button></form>
                             <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
-                    <?php if ($devices === []): ?><tr><td colspan="7" class="empty-state">No devices activated yet.</td></tr><?php endif; ?>
+                    <?php if ($devices === []): ?><tr><td colspan="7" class="empty-state"><?= e(__('No devices activated yet.')) ?></td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>

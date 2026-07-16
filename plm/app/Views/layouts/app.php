@@ -9,9 +9,9 @@
  * @var string $title
  * @var string $active
  */
-$locale = $user['locale'] ?? 'en';
+$locale = lang();
 $theme  = $user['theme'] ?? 'light';
-$dir    = $locale === 'ar' ? 'rtl' : 'ltr';
+$dir    = is_rtl() ? 'rtl' : 'ltr';
 $active = $active ?? '';
 ?>
 <!DOCTYPE html>
@@ -20,7 +20,7 @@ $active = $active ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= e($csrf->token()) ?>">
-    <title><?= e($title ?? 'Dashboard') ?> — <?= e(config('app.name')) ?></title>
+    <title><?= e(__($title ?? 'Dashboard')) ?> — <?= e(config('app.name')) ?></title>
     <link rel="icon" href="<?= asset('images/favicon.svg') ?>" type="image/svg+xml">
     <link rel="stylesheet" href="<?= $dir === 'rtl' ? asset('css/bootstrap.rtl.min.css') : asset('css/bootstrap.min.css') ?>">
     <link rel="stylesheet" href="<?= asset('css/dataTables.bootstrap5.min.css') ?>">
@@ -47,7 +47,7 @@ $active = $active ?? '';
         <footer class="app-footer">
             <div class="container-fluid d-flex justify-content-between">
                 <span>&copy; <?= date('Y') ?> <?= e(config('app.name')) ?> v<?= e(config('app.version')) ?></span>
-                <span class="text-muted">Offline License &amp; Activation Management</span>
+                <span class="text-muted"><?= e(__('Offline License & Activation Management')) ?></span>
             </div>
         </footer>
     </div>

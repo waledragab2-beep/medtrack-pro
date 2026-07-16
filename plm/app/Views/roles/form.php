@@ -17,11 +17,11 @@ $isSuper = ($r['slug'] ?? '') === 'super-admin';
         <form method="post" action="<?= e($action) ?>">
             <?= $csrf->field() ?>
             <div class="row g-3 mb-4">
-                <div class="col-md-4"><label class="form-label">Role Name *</label><input class="form-control" name="name" value="<?= e($r['name'] ?? '') ?>" required></div>
-                <div class="col-md-8"><label class="form-label">Description</label><input class="form-control" name="description" value="<?= e($r['description'] ?? '') ?>"></div>
+                <div class="col-md-4"><label class="form-label"><?= e(__('Role Name')) ?> *</label><input class="form-control" name="name" value="<?= e($r['name'] ?? '') ?>" required></div>
+                <div class="col-md-8"><label class="form-label"><?= e(__('Description')) ?></label><input class="form-control" name="description" value="<?= e($r['description'] ?? '') ?>"></div>
             </div>
 
-            <div class="form-section-title">Permissions</div>
+            <div class="form-section-title"><?= e(__('Permissions')) ?></div>
             <?php if ($isSuper): ?>
                 <div class="alert alert-info">The Super Administrator role always has all permissions and cannot be restricted.</div>
             <?php else: ?>
@@ -46,7 +46,7 @@ $isSuper = ($r['slug'] ?? '') === 'super-admin';
 
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Update' : 'Create' ?> Role</button>
-                <a href="<?= url('roles') ?>" class="btn btn-outline-secondary">Cancel</a>
+                <a href="<?= url('roles') ?>" class="btn btn-outline-secondary"><?= e(__('Cancel')) ?></a>
             </div>
         </form>
     </div>

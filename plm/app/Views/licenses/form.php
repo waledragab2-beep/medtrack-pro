@@ -25,10 +25,10 @@ if (!empty($l['modules'])) {
             <?= $csrf->field() ?>
 
             <div class="form-section">
-                <div class="form-section-title">License Assignment</div>
+                <div class="form-section-title"><?= e(__('License Assignment')) ?></div>
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Customer *</label>
+                        <label class="form-label"><?= e(__('Customer')) ?> *</label>
                         <select class="form-select" name="customer_id" required>
                             <option value="">— Select customer —</option>
                             <?php foreach ($customers as $c): ?>
@@ -37,7 +37,7 @@ if (!empty($l['modules'])) {
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Product *</label>
+                        <label class="form-label"><?= e(__('Product')) ?> *</label>
                         <select class="form-select" name="product_id" required>
                             <option value="">— Select —</option>
                             <?php foreach ($products as $p): ?>
@@ -46,7 +46,7 @@ if (!empty($l['modules'])) {
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Version</label>
+                        <label class="form-label"><?= e(__('Version')) ?></label>
                         <select class="form-select" name="version_id">
                             <option value="">— Any —</option>
                             <?php foreach ($versions as $v): ?>
@@ -58,24 +58,24 @@ if (!empty($l['modules'])) {
             </div>
 
             <div class="form-section">
-                <div class="form-section-title">License Terms</div>
+                <div class="form-section-title"><?= e(__('License Terms')) ?></div>
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <label class="form-label">License Type *</label>
+                        <label class="form-label"><?= e(__('License Type')) ?> *</label>
                         <select class="form-select" name="type" id="licenseType" required>
                             <?php foreach ($types as $t => $days): ?>
                                 <option value="<?= $t ?>" <?= ($l['type'] ?? 'trial') === $t ? 'selected' : '' ?>><?= ucwords(str_replace('_', ' ', $t)) ?><?= $days ? " ({$days}d)" : ' (perpetual)' ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-4"><label class="form-label">Issue Date *</label><input type="date" class="form-control" id="issueDate" name="issue_date" value="<?= e($l['issue_date'] ?? date('Y-m-d')) ?>" required></div>
-                    <div class="col-md-4"><label class="form-label">Expiry Date</label><input type="date" class="form-control" id="expireDate" name="expire_date" value="<?= e($l['expire_date'] ?? '') ?>"><small class="text-muted">Auto-computed from type; override if needed.</small></div>
-                    <div class="col-md-3"><label class="form-label">Users Limit *</label><input type="number" min="1" class="form-control" name="users_limit" value="<?= e($l['users_limit'] ?? 1) ?>" required></div>
-                    <div class="col-md-3"><label class="form-label">Devices Limit *</label><input type="number" min="1" class="form-control" name="devices_limit" value="<?= e($l['devices_limit'] ?? 1) ?>" required></div>
-                    <div class="col-md-3"><label class="form-label">Branches Limit *</label><input type="number" min="1" class="form-control" name="branches_limit" value="<?= e($l['branches_limit'] ?? 1) ?>" required></div>
+                    <div class="col-md-4"><label class="form-label"><?= e(__('Issue Date')) ?> *</label><input type="date" class="form-control" id="issueDate" name="issue_date" value="<?= e($l['issue_date'] ?? date('Y-m-d')) ?>" required></div>
+                    <div class="col-md-4"><label class="form-label"><?= e(__('Expiry Date')) ?></label><input type="date" class="form-control" id="expireDate" name="expire_date" value="<?= e($l['expire_date'] ?? '') ?>"><small class="text-muted">Auto-computed from type; override if needed.</small></div>
+                    <div class="col-md-3"><label class="form-label"><?= e(__('Users Limit')) ?> *</label><input type="number" min="1" class="form-control" name="users_limit" value="<?= e($l['users_limit'] ?? 1) ?>" required></div>
+                    <div class="col-md-3"><label class="form-label"><?= e(__('Devices Limit')) ?> *</label><input type="number" min="1" class="form-control" name="devices_limit" value="<?= e($l['devices_limit'] ?? 1) ?>" required></div>
+                    <div class="col-md-3"><label class="form-label"><?= e(__('Branches Limit')) ?> *</label><input type="number" min="1" class="form-control" name="branches_limit" value="<?= e($l['branches_limit'] ?? 1) ?>" required></div>
                     <?php if ($isEdit): ?>
                     <div class="col-md-3">
-                        <label class="form-label">Status</label>
+                        <label class="form-label"><?= e(__('Status')) ?></label>
                         <select class="form-select" name="status">
                             <?php foreach (['active', 'expired', 'suspended', 'revoked', 'pending'] as $s): ?>
                                 <option value="<?= $s ?>" <?= ($l['status'] ?? 'active') === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option>
@@ -87,7 +87,7 @@ if (!empty($l['modules'])) {
             </div>
 
             <div class="form-section">
-                <div class="form-section-title">Licensed Modules</div>
+                <div class="form-section-title"><?= e(__('Licensed Modules')) ?></div>
                 <div class="row g-2">
                     <?php foreach ($modules as $m): ?>
                         <div class="col-md-3 col-6">
@@ -102,24 +102,24 @@ if (!empty($l['modules'])) {
             </div>
 
             <div class="form-section">
-                <div class="form-section-title">Commercial</div>
+                <div class="form-section-title"><?= e(__('Commercial')) ?></div>
                 <div class="row g-3">
-                    <div class="col-md-3"><label class="form-label">Price</label><input type="number" step="0.01" min="0" class="form-control" name="price" value="<?= e($l['price'] ?? '0.00') ?>"></div>
+                    <div class="col-md-3"><label class="form-label"><?= e(__('Price')) ?></label><input type="number" step="0.01" min="0" class="form-control" name="price" value="<?= e($l['price'] ?? '0.00') ?>"></div>
                     <div class="col-md-3">
-                        <label class="form-label">Currency</label>
+                        <label class="form-label"><?= e(__('Currency')) ?></label>
                         <select class="form-select" name="currency">
                             <?php foreach (['USD', 'EUR', 'GBP', 'SAR', 'AED', 'EGP'] as $cur): ?>
                                 <option value="<?= $cur ?>" <?= ($l['currency'] ?? config('general.currency', 'USD')) === $cur ? 'selected' : '' ?>><?= $cur ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-12"><label class="form-label">Notes</label><textarea class="form-control" name="notes" rows="2"><?= e($l['notes'] ?? '') ?></textarea></div>
+                    <div class="col-12"><label class="form-label"><?= e(__('Notes')) ?></label><textarea class="form-control" name="notes" rows="2"><?= e($l['notes'] ?? '') ?></textarea></div>
                 </div>
             </div>
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary"><?= $isEdit ? 'Update License' : 'Generate License' ?></button>
-                <a href="<?= url('licenses') ?>" class="btn btn-outline-secondary">Cancel</a>
+                <a href="<?= url('licenses') ?>" class="btn btn-outline-secondary"><?= e(__('Cancel')) ?></a>
             </div>
         </form>
     </div>

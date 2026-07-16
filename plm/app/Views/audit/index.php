@@ -11,16 +11,16 @@
 <div class="card">
     <div class="card-body">
         <form class="data-toolbar" method="get" action="<?= url('audit') ?>">
-            <input type="search" name="q" class="form-control" placeholder="Search description / entity…" value="<?= e($term) ?>">
+            <input type="search" name="q" class="form-control" placeholder="<?= e(__('Search description / entity…')) ?>" value="<?= e($term) ?>">
             <select name="action" class="form-select">
-                <option value="all">All Actions</option>
+                <option value="all"><?= e(__('All Actions')) ?></option>
                 <?php foreach ($actions as $a): ?><option value="<?= e($a) ?>" <?= $action === $a ? 'selected' : '' ?>><?= e(ucfirst($a)) ?></option><?php endforeach; ?>
             </select>
-            <button class="btn btn-primary">Filter</button>
+            <button class="btn btn-primary"><?= e(__('Filter')) ?></button>
         </form>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
-                <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Entity</th><th>Description</th><th>IP</th></tr></thead>
+                <thead><tr><th><?= e(__('Time')) ?></th><th><?= e(__('User')) ?></th><th><?= e(__('Action')) ?></th><th><?= e(__('Entity')) ?></th><th><?= e(__('Description')) ?></th><th><?= e(__('IP')) ?></th></tr></thead>
                 <tbody>
                     <?php foreach ($result['data'] as $a): ?>
                     <tr>
@@ -32,7 +32,7 @@
                         <td><span class="mono small"><?= e($a['ip_address']) ?></span></td>
                     </tr>
                     <?php endforeach; ?>
-                    <?php if ($result['data'] === []): ?><tr><td colspan="6" class="empty-state">No audit entries found.</td></tr><?php endif; ?>
+                    <?php if ($result['data'] === []): ?><tr><td colspan="6" class="empty-state"><?= e(__('No audit entries found.')) ?></td></tr><?php endif; ?>
                 </tbody>
             </table>
         </div>

@@ -44,6 +44,12 @@ final class App
 
         $c->singleton(Logger::class, fn () => new Logger($this->config['paths']['logs']));
         $c->singleton(Session::class, fn () => new Session($this->config['security']));
+        $c->singleton(Translator::class, function () {
+            $translator = new Translator(dirname(__DIR__, 2) . '/lang');
+            $translator->setLocale($this->config['app']['locale'] ?? 'en');
+            $translator->activate();
+            return $translator;
+        });
         $c->singleton(Request::class, fn () => new Request());
         $c->singleton(Response::class, fn () => new Response());
         $c->singleton(View::class, fn () => new View($this->config['paths']['views']));
@@ -72,6 +78,9 @@ final class App
     {
         $session  = $this->container->make(Session::class);
         $session->start();
+
+        // Activate the translator (locale is refined per-request by controllers).
+        $this->container->make(Translator::class);
 
         $request  = $this->container->make(Request::class);
         $response = $this->container->make(Response::class);

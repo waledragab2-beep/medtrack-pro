@@ -17,18 +17,18 @@ $modules = json_decode((string) ($license['modules'] ?? '[]'), true) ?: [];
     <div class="cert-key"><?= e($license['license_key']) ?></div>
 
     <div class="cert-grid">
-        <div class="cert-field"><label>License Number</label><span><?= e($license['license_number']) ?></span></div>
-        <div class="cert-field"><label>License Type</label><span><?= e(ucwords(str_replace('_', ' ', $license['type']))) ?></span></div>
-        <div class="cert-field"><label>Licensed To</label><span><?= e($license['customer_name']) ?></span></div>
-        <div class="cert-field"><label>Product</label><span><?= e($license['product_name']) ?><?= $license['version_number'] ? ' v' . e($license['version_number']) : '' ?></span></div>
-        <div class="cert-field"><label>Issue Date</label><span><?= human_date($license['issue_date']) ?></span></div>
-        <div class="cert-field"><label>Expiry Date</label><span><?= $license['expire_date'] ? human_date($license['expire_date']) : 'Lifetime' ?></span></div>
-        <div class="cert-field"><label>Users Allowed</label><span><?= (int) $license['users_limit'] ?></span></div>
-        <div class="cert-field"><label>Devices Allowed</label><span><?= (int) $license['devices_limit'] ?></span></div>
+        <div class="cert-field"><label><?= e(__('License Number')) ?></label><span><?= e($license['license_number']) ?></span></div>
+        <div class="cert-field"><label><?= e(__('License Type')) ?></label><span><?= e(__(ucwords(str_replace('_', ' ', $license['type'])))) ?></span></div>
+        <div class="cert-field"><label><?= e(__('Licensed To')) ?></label><span><?= e($license['customer_name']) ?></span></div>
+        <div class="cert-field"><label><?= e(__('Product')) ?></label><span><?= e($license['product_name']) ?><?= $license['version_number'] ? ' v' . e($license['version_number']) : '' ?></span></div>
+        <div class="cert-field"><label><?= e(__('Issue Date')) ?></label><span><?= human_date($license['issue_date']) ?></span></div>
+        <div class="cert-field"><label><?= e(__('Expiry Date')) ?></label><span><?= $license['expire_date'] ? human_date($license['expire_date']) : 'Lifetime' ?></span></div>
+        <div class="cert-field"><label><?= e(__('Users Allowed')) ?></label><span><?= (int) $license['users_limit'] ?></span></div>
+        <div class="cert-field"><label><?= e(__('Devices Allowed')) ?></label><span><?= (int) $license['devices_limit'] ?></span></div>
     </div>
 
     <?php if ($modules): ?>
-        <div class="cert-field"><label>Licensed Modules</label><span><?= e(implode(', ', $modules)) ?></span></div>
+        <div class="cert-field"><label><?= e(__('Licensed Modules')) ?></label><span><?= e(implode(', ', $modules)) ?></span></div>
     <?php endif; ?>
 
     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:30px;">
@@ -44,6 +44,6 @@ $modules = json_decode((string) ($license['modules'] ?? '[]'), true) ?: [];
     </div>
 
     <div class="text-center mt-4">
-        <button class="btn btn-primary" onclick="window.print()">Print</button>
+        <button class="btn btn-primary" onclick="window.print()"><?= e(__('Print')) ?></button>
     </div>
 </div>

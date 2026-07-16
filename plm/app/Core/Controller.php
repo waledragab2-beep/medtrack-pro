@@ -16,7 +16,8 @@ abstract class Controller
         protected View $view,
         protected Session $session,
         protected Csrf $csrf,
-        protected Auth $auth
+        protected Auth $auth,
+        protected Translator $translator
     ) {
     }
 
@@ -27,8 +28,24 @@ abstract class Controller
      */
     protected function render(Response $response, string $view, array $data = [], string $layout = 'layouts/app'): Response
     {
+        $this->resolveLocale();
         $data = array_merge($this->viewDefaults(), $data);
         return $response->body($this->view->render($view, $data, $layout));
+    }
+
+    /**
+     * Resolve and apply the active locale from the current user or settings.
+     */
+    protected function resolveLocale(): void
+    {
+        $user   = $this->auth->user();
+        $locale = $user['locale'] ?? null;
+
+        if (!is_string($locale) || $locale === '') {
+            $locale = (string) config('app.locale', 'en');
+        }
+
+        $this->translator->setLocale($locale);
     }
 
     /**

@@ -8,8 +8,8 @@
 ?>
 <div class="card">
     <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">All Notifications</h5>
-        <form method="post" action="<?= url('notifications/read-all') ?>"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-secondary">Mark all read</button></form>
+        <h5 class="mb-0"><?= e(__('All Notifications')) ?></h5>
+        <form method="post" action="<?= url('notifications/read-all') ?>"><?= $csrf->field() ?><button class="btn btn-sm btn-outline-secondary"><?= e(__('Mark all read')) ?></button></form>
     </div>
     <div class="list-group list-group-flush">
         <?php foreach ($items as $n): ?>
@@ -20,10 +20,10 @@
                     <small class="text-muted"><?= human_date($n['created_at'], 'Y-m-d H:i') ?></small>
                 </div>
                 <?php if (!(int) $n['is_read']): ?>
-                    <form method="post" action="<?= url('notifications/' . $n['id'] . '/read') ?>"><?= $csrf->field() ?><button class="btn btn-sm btn-link">Mark read</button></form>
+                    <form method="post" action="<?= url('notifications/' . $n['id'] . '/read') ?>"><?= $csrf->field() ?><button class="btn btn-sm btn-link"><?= e(__('Mark read')) ?></button></form>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
-        <?php if ($items === []): ?><div class="list-group-item empty-state">No notifications.</div><?php endif; ?>
+        <?php if ($items === []): ?><div class="list-group-item empty-state"><?= e(__('No notifications.')) ?></div><?php endif; ?>
     </div>
 </div>

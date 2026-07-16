@@ -9,12 +9,12 @@ $active = $active ?? '';
 ?>
 <div class="page-header">
     <div>
-        <h1 class="page-title"><?= e($title ?? 'Page') ?></h1>
+        <h1 class="page-title"><?= e(__($title ?? 'Page')) ?></h1>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="<?= url('dashboard') ?>">Home</a></li>
+                <li class="breadcrumb-item"><a href="<?= url('dashboard') ?>"><?= e(__('Home')) ?></a></li>
                 <?php if ($active !== 'dashboard'): ?>
-                    <li class="breadcrumb-item active" aria-current="page"><?= e(ucfirst($active)) ?></li>
+                    <li class="breadcrumb-item active" aria-current="page"><?= e(__(ucfirst($active))) ?></li>
                 <?php endif; ?>
             </ol>
         </nav>

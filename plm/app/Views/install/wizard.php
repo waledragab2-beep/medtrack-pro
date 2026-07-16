@@ -45,11 +45,11 @@ $steps = [1 => 'Requirements', 2 => 'Database', 3 => 'Administrator', 4 => 'Encr
     <form action="<?= url('install/database') ?>" method="post">
         <?= $csrf->field() ?>
         <div class="row g-3">
-            <div class="col-md-8"><label class="form-label">Host</label><input class="form-control" name="db_host" value="<?= e($db['host'] ?? 'localhost') ?>" required></div>
-            <div class="col-md-4"><label class="form-label">Port</label><input class="form-control" name="db_port" value="<?= e($db['port'] ?? '3306') ?>" required></div>
-            <div class="col-12"><label class="form-label">Database Name</label><input class="form-control" name="db_name" value="<?= e($db['database'] ?? 'plm') ?>" required></div>
-            <div class="col-md-6"><label class="form-label">Username</label><input class="form-control" name="db_user" value="<?= e($db['username'] ?? 'root') ?>" required></div>
-            <div class="col-md-6"><label class="form-label">Password</label><input type="password" class="form-control" name="db_pass" value=""></div>
+            <div class="col-md-8"><label class="form-label"><?= e(__('Host')) ?></label><input class="form-control" name="db_host" value="<?= e($db['host'] ?? 'localhost') ?>" required></div>
+            <div class="col-md-4"><label class="form-label"><?= e(__('Port')) ?></label><input class="form-control" name="db_port" value="<?= e($db['port'] ?? '3306') ?>" required></div>
+            <div class="col-12"><label class="form-label"><?= e(__('Database Name')) ?></label><input class="form-control" name="db_name" value="<?= e($db['database'] ?? 'plm') ?>" required></div>
+            <div class="col-md-6"><label class="form-label"><?= e(__('Username')) ?></label><input class="form-control" name="db_user" value="<?= e($db['username'] ?? 'root') ?>" required></div>
+            <div class="col-md-6"><label class="form-label"><?= e(__('Password')) ?></label><input type="password" class="form-control" name="db_pass" value=""></div>
         </div>
         <button type="submit" class="btn btn-primary mt-3">Test &amp; Continue &rarr;</button>
     </form>
@@ -60,10 +60,10 @@ $steps = [1 => 'Requirements', 2 => 'Database', 3 => 'Administrator', 4 => 'Encr
     <form action="<?= url('install/admin') ?>" method="post">
         <?= $csrf->field() ?>
         <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">Full Name</label><input class="form-control" name="admin_name" required></div>
-            <div class="col-md-6"><label class="form-label">Username</label><input class="form-control" name="admin_username" required></div>
-            <div class="col-12"><label class="form-label">Email</label><input type="email" class="form-control" name="admin_email" required></div>
-            <div class="col-12"><label class="form-label">Password (min 8 chars)</label><input type="password" class="form-control" name="admin_password" minlength="8" required></div>
+            <div class="col-md-6"><label class="form-label"><?= e(__('Full Name')) ?></label><input class="form-control" name="admin_name" required></div>
+            <div class="col-md-6"><label class="form-label"><?= e(__('Username')) ?></label><input class="form-control" name="admin_username" required></div>
+            <div class="col-12"><label class="form-label"><?= e(__('Email')) ?></label><input type="email" class="form-control" name="admin_email" required></div>
+            <div class="col-12"><label class="form-label"><?= e(__('Password (min 8 chars)')) ?></label><input type="password" class="form-control" name="admin_password" minlength="8" required></div>
         </div>
         <button type="submit" class="btn btn-primary mt-3">Continue &rarr;</button>
     </form>

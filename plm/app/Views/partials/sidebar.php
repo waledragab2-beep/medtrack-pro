@@ -36,7 +36,7 @@ $nav = [
                 <li class="nav-item">
                     <a href="<?= e($item['url']) ?>" class="nav-link <?= $active === $item['key'] ? 'active' : '' ?>">
                         <span class="nav-icon"><?= icon($item['icon']) ?></span>
-                        <span class="nav-text"><?= e($item['label']) ?></span>
+                        <span class="nav-text"><?= e(__($item['label'])) ?></span>
                     </a>
                 </li>
                 <?php endif; ?>
@@ -47,7 +47,7 @@ $nav = [
     <div class="sidebar-footer">
         <a href="<?= url('backups') ?>" class="nav-link <?= $active === 'backups' ? 'active' : '' ?>">
             <span class="nav-icon"><?= icon('database') ?></span>
-            <span class="nav-text">Backups</span>
+            <span class="nav-text"><?= e(__('Backups')) ?></span>
         </a>
     </div>
 </aside>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\Translator;
 use App\Core\Controller;
 use App\Core\Csrf;
 use App\Core\Request;
@@ -27,11 +28,12 @@ final class AuthController extends Controller
         Session $session,
         Csrf $csrf,
         Auth $auth,
+        Translator $translator,
         private User $users,
         private LoginAttempt $attempts,
         private AuditService $audit
     ) {
-        parent::__construct($view, $session, $csrf, $auth);
+        parent::__construct($view, $session, $csrf, $auth, $translator);
     }
 
     public function root(Request $request, Response $response): Response

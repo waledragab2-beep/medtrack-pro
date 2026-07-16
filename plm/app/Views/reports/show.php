@@ -23,7 +23,7 @@
                 <?php foreach ($rows as $row): ?>
                     <tr><?php foreach ($row as $cell): ?><td><?= e((string) $cell) ?></td><?php endforeach; ?></tr>
                 <?php endforeach; ?>
-                <?php if ($rows === []): ?><tr><td colspan="<?= count($headers) ?>" class="empty-state">No data available.</td></tr><?php endif; ?>
+                <?php if ($rows === []): ?><tr><td colspan="<?= count($headers) ?>" class="empty-state"><?= e(__('No data available.')) ?></td></tr><?php endif; ?>
             </tbody>
         </table>
     </div>

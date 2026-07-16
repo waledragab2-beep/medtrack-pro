@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Auth;
+use App\Core\Translator;
 use App\Core\Controller;
 use App\Core\Csrf;
 use App\Core\Request;
@@ -34,6 +35,7 @@ final class LicenseController extends Controller
         Session $session,
         Csrf $csrf,
         Auth $auth,
+        Translator $translator,
         private License $licenses,
         private Customer $customers,
         private Product $products,
@@ -43,7 +45,7 @@ final class LicenseController extends Controller
         private LicenseService $licenseService,
         private AuditService $audit
     ) {
-        parent::__construct($view, $session, $csrf, $auth);
+        parent::__construct($view, $session, $csrf, $auth, $translator);
     }
 
     public function index(Request $request, Response $response): Response

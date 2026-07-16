@@ -10,7 +10,7 @@ $map = ['success' => 'success', 'error' => 'danger', 'warning' => 'warning', 'in
 <?php foreach ($flashes as $type => $messages): ?>
     <?php foreach ($messages as $message): ?>
         <div class="alert alert-<?= $map[$type] ?? 'info' ?> alert-dismissible fade show" role="alert">
-            <?= e($message) ?>
+            <?= e(__($message)) ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     <?php endforeach; ?>

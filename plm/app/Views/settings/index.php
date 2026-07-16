@@ -35,11 +35,11 @@ $labels = [
                         <div class="col-md-6">
                             <label class="form-label"><?= e($labels[$key] ?? ucwords(str_replace('_', ' ', $key))) ?></label>
                             <?php if ($key === 'default_theme'): ?>
-                                <select class="form-select" name="<?= e($key) ?>"><option value="light" <?= $val === 'light' ? 'selected' : '' ?>>Light</option><option value="dark" <?= $val === 'dark' ? 'selected' : '' ?>>Dark</option></select>
+                                <select class="form-select" name="<?= e($key) ?>"><option value="light" <?= $val === 'light' ? 'selected' : '' ?>><?= e(__('Light')) ?></option><option value="dark" <?= $val === 'dark' ? 'selected' : '' ?>><?= e(__('Dark')) ?></option></select>
                             <?php elseif ($key === 'default_locale'): ?>
                                 <select class="form-select" name="<?= e($key) ?>"><option value="en" <?= $val === 'en' ? 'selected' : '' ?>>English</option><option value="ar" <?= $val === 'ar' ? 'selected' : '' ?>>العربية</option></select>
                             <?php elseif ($key === 'smtp_encryption'): ?>
-                                <select class="form-select" name="<?= e($key) ?>"><option value="tls" <?= $val === 'tls' ? 'selected' : '' ?>>TLS</option><option value="ssl" <?= $val === 'ssl' ? 'selected' : '' ?>>SSL</option><option value="none" <?= $val === 'none' ? 'selected' : '' ?>>None</option></select>
+                                <select class="form-select" name="<?= e($key) ?>"><option value="tls" <?= $val === 'tls' ? 'selected' : '' ?>>TLS</option><option value="ssl" <?= $val === 'ssl' ? 'selected' : '' ?>>SSL</option><option value="none" <?= $val === 'none' ? 'selected' : '' ?>><?= e(__('None')) ?></option></select>
                             <?php elseif ($key === 'smtp_password'): ?>
                                 <input type="password" class="form-control" name="<?= e($key) ?>" value="<?= e($val) ?>" autocomplete="new-password">
                             <?php else: ?>
@@ -48,13 +48,13 @@ $labels = [
                         </div>
                     <?php endforeach; ?>
                     <?php if ($group === 'company'): ?>
-                        <div class="col-md-6"><label class="form-label">Company Logo</label><input type="file" class="form-control" name="company_logo" accept="image/*"><?php if (!empty($settings['company_logo'])): ?><img src="<?= asset('../' . $settings['company_logo']) ?>" alt="logo" height="40" class="mt-2"><?php endif; ?></div>
+                        <div class="col-md-6"><label class="form-label"><?= e(__('Company Logo')) ?></label><input type="file" class="form-control" name="company_logo" accept="image/*"><?php if (!empty($settings['company_logo'])): ?><img src="<?= asset('../' . $settings['company_logo']) ?>" alt="logo" height="40" class="mt-2"><?php endif; ?></div>
                     <?php endif; ?>
                     <?php if ($group === 'smtp'): ?>
                         <div class="col-12"><hr>
                             <div class="input-group" style="max-width:460px">
-                                <input type="email" class="form-control" id="testMailInput" placeholder="Send test email to…">
-                                <button class="btn btn-outline-secondary" type="button" id="testMailBtn">Send Test</button>
+                                <input type="email" class="form-control" id="testMailInput" placeholder="<?= e(__('Send test email to…')) ?>">
+                                <button class="btn btn-outline-secondary" type="button" id="testMailBtn"><?= e(__('Send Test')) ?></button>
                             </div>
                             <div id="testMailResult"></div>
                         </div>
@@ -69,7 +69,7 @@ $labels = [
                 <p class="text-muted small">RSA-4096 key pair used to sign and verify license files.</p>
                 <p>Status: <?= $keysExist ? '<span class="badge bg-success">Keys present</span>' : '<span class="badge bg-danger">Missing</span>' ?></p>
                 <?php if ($auth->isSuperAdmin()): ?>
-                    <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Regenerating keys invalidates all existing license files. Continue?')){document.getElementById('regenKeysForm').submit();}">Regenerate Keys</button>
+                    <button type="button" class="btn btn-outline-danger" onclick="if(confirm('Regenerating keys invalidates all existing license files. Continue?')){document.getElementById('regenKeysForm').submit();}"><?= e(__('Regenerate Keys')) ?></button>
                 <?php else: ?>
                     <p class="text-muted small">Only a super administrator may regenerate keys.</p>
                 <?php endif; ?>
@@ -77,7 +77,7 @@ $labels = [
         </div>
     </div>
 
-    <div class="mt-4"><button type="submit" class="btn btn-primary">Save Settings</button></div>
+    <div class="mt-4"><button type="submit" class="btn btn-primary"><?= e(__('Save Settings')) ?></button></div>
 </form>
 
 <?php if ($auth->isSuperAdmin()): ?>

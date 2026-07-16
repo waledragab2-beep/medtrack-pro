@@ -23,7 +23,7 @@ $cards = [
             <div class="stat-icon"><?= icon($card['icon']) ?></div>
             <div class="stat-body">
                 <div class="stat-value" data-count="<?= $card['value'] ?>"><?= number_format($card['value']) ?></div>
-                <div class="stat-label"><?= e($card['label']) ?></div>
+                <div class="stat-label"><?= e(__($card['label'])) ?></div>
             </div>
         </div>
     <?php endforeach; ?>
@@ -31,7 +31,7 @@ $cards = [
         <div class="stat-icon"><?= icon('chart') ?></div>
         <div class="stat-body">
             <div class="stat-value"><?= e($currency) ?> <?= number_format((float) ($stats['total_revenue'] ?? 0), 2) ?></div>
-            <div class="stat-label">Total Revenue</div>
+            <div class="stat-label"><?= e(__('Total Revenue')) ?></div>
         </div>
     </div>
 </div>
@@ -39,13 +39,13 @@ $cards = [
 <div class="row g-4 mt-1">
     <div class="col-lg-8">
         <div class="card h-100">
-            <div class="card-header"><h5 class="mb-0">Revenue (Last 12 Months)</h5></div>
+            <div class="card-header"><h5 class="mb-0"><?= e(__('Revenue (Last 12 Months)')) ?></h5></div>
             <div class="card-body"><canvas id="revenueChart" height="110"></canvas></div>
         </div>
     </div>
     <div class="col-lg-4">
         <div class="card h-100">
-            <div class="card-header"><h5 class="mb-0">Licenses by Type</h5></div>
+            <div class="card-header"><h5 class="mb-0"><?= e(__('Licenses by Type')) ?></h5></div>
             <div class="card-body"><canvas id="typeChart" height="180"></canvas></div>
         </div>
     </div>
@@ -54,13 +54,13 @@ $cards = [
 <div class="row g-4 mt-1">
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header"><h5 class="mb-0">Activations (Last 30 Days)</h5></div>
+            <div class="card-header"><h5 class="mb-0"><?= e(__('Activations (Last 30 Days)')) ?></h5></div>
             <div class="card-body"><canvas id="activationChart" height="150"></canvas></div>
         </div>
     </div>
     <div class="col-lg-6">
         <div class="card h-100">
-            <div class="card-header"><h5 class="mb-0">License Status</h5></div>
+            <div class="card-header"><h5 class="mb-0"><?= e(__('License Status')) ?></h5></div>
             <div class="card-body"><canvas id="statusChart" height="150"></canvas></div>
         </div>
     </div>
@@ -70,23 +70,23 @@ $cards = [
     <div class="col-lg-7">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Latest Licenses</h5>
-                <a href="<?= url('licenses') ?>" class="btn btn-sm btn-outline-primary">View all</a>
+                <h5 class="mb-0"><?= e(__('Latest Licenses')) ?></h5>
+                <a href="<?= url('licenses') ?>" class="btn btn-sm btn-outline-primary"><?= e(__('View all')) ?></a>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0 align-middle">
-                    <thead><tr><th>Number</th><th>Customer</th><th>Product</th><th>Type</th><th>Status</th></tr></thead>
+                    <thead><tr><th><?= e(__('Number')) ?></th><th><?= e(__('Customer')) ?></th><th><?= e(__('Product')) ?></th><th><?= e(__('Type')) ?></th><th><?= e(__('Status')) ?></th></tr></thead>
                     <tbody>
                         <?php foreach ($latest as $l): ?>
                         <tr>
                             <td><span class="mono"><?= e($l['license_number']) ?></span></td>
                             <td><?= e($l['company_name']) ?></td>
                             <td><?= e($l['product_name']) ?></td>
-                            <td><span class="badge bg-light text-dark"><?= e(ucfirst(str_replace('_', ' ', $l['type']))) ?></span></td>
-                            <td><span class="badge <?= status_badge($l['status']) ?>"><?= e(ucfirst($l['status'])) ?></span></td>
+                            <td><span class="badge bg-light text-dark"><?= e(__(ucwords(str_replace('_', ' ', $l['type'])))) ?></span></td>
+                            <td><span class="badge <?= status_badge($l['status']) ?>"><?= e(__(ucfirst($l['status']))) ?></span></td>
                         </tr>
                         <?php endforeach; ?>
-                        <?php if ($latest === []): ?><tr><td colspan="5" class="text-center text-muted py-4">No licenses yet.</td></tr><?php endif; ?>
+                        <?php if ($latest === []): ?><tr><td colspan="5" class="text-center text-muted py-4"><?= e(__('No licenses yet.')) ?></td></tr><?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -94,7 +94,7 @@ $cards = [
     </div>
     <div class="col-lg-5">
         <div class="card">
-            <div class="card-header"><h5 class="mb-0">Expiring Soon</h5></div>
+            <div class="card-header"><h5 class="mb-0"><?= e(__('Expiring Soon')) ?></h5></div>
             <div class="list-group list-group-flush">
                 <?php foreach (array_slice($expiring, 0, 6) as $ex): ?>
                     <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -103,11 +103,11 @@ $cards = [
                             <small class="text-muted"><?= e($ex['license_number']) ?> · <?= e($ex['product_name']) ?></small>
                         </div>
                         <span class="badge <?= (int) $ex['days_remaining'] <= 7 ? 'bg-danger' : 'bg-warning text-dark' ?>">
-                            <?= (int) $ex['days_remaining'] ?> days
+                            <?= (int) $ex['days_remaining'] ?> <?= e(__('days')) ?>
                         </span>
                     </div>
                 <?php endforeach; ?>
-                <?php if ($expiring === []): ?><div class="list-group-item text-center text-muted py-4">Nothing expiring soon.</div><?php endif; ?>
+                <?php if ($expiring === []): ?><div class="list-group-item text-center text-muted py-4"><?= e(__('Nothing expiring soon.')) ?></div><?php endif; ?>
             </div>
         </div>
     </div>

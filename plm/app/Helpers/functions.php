@@ -19,6 +19,44 @@ if (!function_exists('e')) {
     }
 }
 
+if (!function_exists('__')) {
+    /**
+     * Translate a string using the active translator.
+     *
+     * Falls back to the source string when no translator or translation
+     * exists, so it is always safe to call.
+     *
+     * @param array<string, string|int> $replacements
+     */
+    function __(string $text, array $replacements = []): string
+    {
+        $translator = \App\Core\Translator::active();
+        return $translator !== null ? $translator->translate($text, $replacements) : $text;
+    }
+}
+
+if (!function_exists('lang')) {
+    /**
+     * Current active locale code (e.g. "en", "ar").
+     */
+    function lang(): string
+    {
+        $translator = \App\Core\Translator::active();
+        return $translator !== null ? $translator->locale() : 'en';
+    }
+}
+
+if (!function_exists('is_rtl')) {
+    /**
+     * Whether the active locale is right-to-left.
+     */
+    function is_rtl(): bool
+    {
+        $translator = \App\Core\Translator::active();
+        return $translator !== null && $translator->isRtl();
+    }
+}
+
 if (!function_exists('config')) {
     /**
      * Retrieve a configuration value using dot notation.

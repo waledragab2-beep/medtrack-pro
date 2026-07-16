@@ -13,7 +13,7 @@
         </button>
         <form class="topnav-search" action="<?= url('licenses') ?>" method="get" role="search">
             <?= icon('list') ?>
-            <input type="search" name="q" placeholder="Search licenses…" aria-label="Search" autocomplete="off">
+            <input type="search" name="q" placeholder="<?= e(__('Search licenses…')) ?>" aria-label="<?= e(__('Search')) ?>" autocomplete="off">
         </form>
     </div>
 
@@ -29,11 +29,11 @@
             </button>
             <div class="dropdown-menu dropdown-menu-end notif-menu" id="notifMenu">
                 <div class="notif-header d-flex justify-content-between align-items-center">
-                    <strong>Notifications</strong>
-                    <a href="<?= url('notifications') ?>" class="small">View all</a>
+                    <strong><?= e(__('Notifications')) ?></strong>
+                    <a href="<?= url('notifications') ?>" class="small"><?= e(__('View all')) ?></a>
                 </div>
                 <div class="notif-list" id="notifList">
-                    <div class="notif-empty text-muted small p-3">No new notifications.</div>
+                    <div class="notif-empty text-muted small p-3"><?= e(__('No new notifications.')) ?></div>
                 </div>
             </div>
         </div>
@@ -47,13 +47,13 @@
                 </span>
             </button>
             <ul class="dropdown-menu dropdown-menu-end">
-                <li><a class="dropdown-item" href="<?= url('profile') ?>">My Profile</a></li>
-                <li><a class="dropdown-item" href="<?= url('settings') ?>">Settings</a></li>
+                <li><a class="dropdown-item" href="<?= url('profile') ?>"><?= e(__('My Profile')) ?></a></li>
+                <li><a class="dropdown-item" href="<?= url('settings') ?>"><?= e(__('Settings')) ?></a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <form action="<?= url('logout') ?>" method="post" class="px-1">
                         <?= $csrf->field() ?>
-                        <button type="submit" class="dropdown-item text-danger"><?= icon('logout') ?> Sign out</button>
+                        <button type="submit" class="dropdown-item text-danger"><?= icon('logout') ?> <?= e(__('Sign out')) ?></button>
                     </form>
                 </li>
             </ul>
