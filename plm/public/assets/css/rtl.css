@@ -1,0 +1,12 @@
+/* =====================================================================
+   Prima License Manager — RTL overrides
+   Layered on top of Bootstrap's RTL stylesheet for Arabic locale.
+   ===================================================================== */
+
+body { font-family: 'Segoe UI', 'Tahoma', 'Noto Kufi Arabic', 'Cairo', sans-serif; }
+
+.page-title, .card-header, .stat-value { text-align: right; }
+.notif-badge { inset-inline-end: auto; inset-inline-start: -4px; }
+
+/* Charts and numeric content remain LTR for readability. */
+.mono, canvas, .cert-key { direction: ltr; unicode-bidi: embed; }
