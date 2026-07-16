@@ -41,7 +41,6 @@ final class App
         $c = $this->container;
 
         $c->instance(Container::class, $c);
-        $c->instance('config', $this->config);
 
         $c->singleton(Logger::class, fn () => new Logger($this->config['paths']['logs']));
         $c->singleton(Session::class, fn () => new Session($this->config['security']));

@@ -79,7 +79,7 @@ final class License
         if (count($parts) === 2 && trim($parts[0]) === self::MAGIC) {
             $body = $this->secret !== null
                 ? $this->decrypt(trim($parts[1]))
-                : base64_decode(trim($parts[1]), true) ?: '';
+                : (base64_decode(trim($parts[1]), true) ?: '');
             $container = json_decode($body, true);
         } else {
             // Allow plain JSON descriptors (unencrypted distribution).
