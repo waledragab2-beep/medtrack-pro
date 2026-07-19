@@ -1,0 +1,32 @@
+{
+    "name": "prima/license-manager",
+    "description": "Prima License Manager (PLM) - Offline License & Activation Management System",
+    "type": "project",
+    "version": "1.0.0",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.3",
+        "ext-pdo": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Prima\\LicenseSDK\\": "app/LicenseSDK/"
+        },
+        "files": [
+            "app/Helpers/functions.php"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "@php -r \"echo 'PLM dependencies installed.' . PHP_EOL;\""
+        ]
+    }
+}

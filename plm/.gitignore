@@ -1,0 +1,24 @@
+# Dependencies
+/vendor/
+
+# Runtime storage
+/storage/logs/*
+/storage/uploads/*
+/storage/temp/*
+/storage/backups/*
+/storage/keys/
+!/storage/logs/.gitkeep
+!/storage/uploads/.gitkeep
+!/storage/temp/.gitkeep
+!/storage/backups/.gitkeep
+
+# Installer lock & local config (contain secrets / environment state)
+/storage/installed.lock
+/config/database.local.php
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

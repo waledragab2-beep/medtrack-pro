@@ -1,0 +1,21 @@
+# =====================================================================
+#  Prima License Manager — Root redirect to /public
+#
+#  Use this when your hosting document root points at the application
+#  folder instead of the /public directory (common on shared hosting).
+#  It transparently serves the application from public/ while blocking
+#  direct access to application source, config and storage.
+# =====================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block direct access to sensitive directories.
+    RewriteRule ^(app|config|database|storage|routes|vendor|installer)/ - [F,L]
+
+    # Send all traffic into the public front controller.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+Options -Indexes

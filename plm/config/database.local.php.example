@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Example local database credentials.
+ *
+ * The installer generates the real `database.local.php` for you. To configure
+ * manually, copy this file to `database.local.php` and fill in your details.
+ * `database.local.php` is git-ignored and must never be committed.
+ */
+
+return [
+    'host'     => 'localhost',
+    'port'     => 3306,
+    'database' => 'plm',
+    'username' => 'plm_user',
+    'password' => 'change-me',
+];
