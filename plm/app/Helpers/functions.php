@@ -80,13 +80,40 @@ if (!function_exists('config')) {
     }
 }
 
+if (!function_exists('base_path')) {
+    /**
+     * Detect the application's base URI path when it lives in a subdirectory
+     * (e.g. "/license"). Returns an empty string at the web root.
+     *
+     * Derived from SCRIPT_NAME so it works with no manual configuration on
+     * shared hosting, whether the document root points at the app folder or
+     * at the public/ directory.
+     */
+    function base_path(): string
+    {
+        $script = str_replace('\\', '/', (string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+        $dir    = rtrim(dirname($script), '/');   // drop trailing /index.php
+        if (str_ends_with($dir, '/public')) {
+            $dir = substr($dir, 0, -7);           // drop trailing /public
+        }
+        $dir = '/' . trim($dir, '/');
+        return $dir === '/' ? '' : $dir;
+    }
+}
+
 if (!function_exists('asset')) {
     /**
      * Build a URL to a public asset.
+     *
+     * Uses the configured absolute app URL when set, otherwise falls back to
+     * the auto-detected base path so assets resolve in subdirectory installs.
      */
     function asset(string $path): string
     {
         $base = rtrim((string) config('app.url', ''), '/');
+        if ($base === '') {
+            $base = base_path();
+        }
         return $base . '/assets/' . ltrim($path, '/');
     }
 }
@@ -94,10 +121,16 @@ if (!function_exists('asset')) {
 if (!function_exists('url')) {
     /**
      * Build an application URL.
+     *
+     * Uses the configured absolute app URL when set, otherwise falls back to
+     * the auto-detected base path so links resolve in subdirectory installs.
      */
     function url(string $path = ''): string
     {
         $base = rtrim((string) config('app.url', ''), '/');
+        if ($base === '') {
+            $base = base_path();
+        }
         return $base . '/' . ltrim($path, '/');
     }
 }

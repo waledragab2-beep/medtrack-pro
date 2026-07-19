@@ -28,6 +28,16 @@ Upload `plm/` so its contents sit at your web root (e.g. `public_html/`). The
 included root `.htaccess` transparently forwards requests into `public/` and
 blocks direct access to `app/`, `config/`, `storage/`, etc.
 
+**Option C — a subdirectory of an existing site**
+Upload the application into a folder such as `public_html/license/` so it is
+served from `https://your-domain.com/license/`. No configuration is required:
+the application auto-detects its base path, so routes, links, assets, redirects
+and the browser API calls all resolve correctly under the subdirectory. The
+root `.htaccess` still forwards into `public/` and protects the source folders.
+
+> Tip: if you later move the app to a different folder or the web root, you do
+> not need to change anything — the base path is detected on every request.
+
 ---
 
 ## 3. Set permissions

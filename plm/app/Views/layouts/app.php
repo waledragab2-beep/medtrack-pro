@@ -53,6 +53,7 @@ $active = $active ?? '';
     </div>
 </div>
 
+<script>window.PLM_BASE = <?= json_encode(rtrim(url(''), '/')) ?>;</script>
 <script src="<?= asset('js/jquery.min.js') ?>"></script>
 <script src="<?= asset('js/bootstrap.bundle.min.js') ?>"></script>
 <script src="<?= asset('js/dataTables.min.js') ?>"></script>

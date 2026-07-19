@@ -88,6 +88,9 @@ final class App
         // Redirect to installer if not yet installed.
         if (!($this->config['app']['installed'] ?? false) && !str_starts_with($request->uri(), '/install')) {
             $base = rtrim((string) ($this->config['app']['url'] ?? ''), '/');
+            if ($base === '') {
+                $base = $request->basePath();   // subdirectory-aware fallback (e.g. "/license")
+            }
             $response->redirect($base . '/install')->send();
             return;
         }

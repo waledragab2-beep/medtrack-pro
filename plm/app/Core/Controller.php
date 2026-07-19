@@ -74,6 +74,9 @@ abstract class Controller
     protected function redirect(Response $response, string $path, int $status = 302): Response
     {
         $base = rtrim((require dirname(__DIR__, 2) . '/config/config.php')['app']['url'], '/');
+        if ($base === '') {
+            $base = base_path();   // subdirectory-aware fallback (e.g. "/license")
+        }
         $url  = str_starts_with($path, 'http') ? $path : $base . $path;
         return $response->redirect($url, $status);
     }

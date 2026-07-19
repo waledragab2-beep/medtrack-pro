@@ -69,7 +69,32 @@ final class Request
     {
         $uri = $this->server['REQUEST_URI'] ?? '/';
         $uri = parse_url((string) $uri, PHP_URL_PATH) ?: '/';
+
+        // Strip the subdirectory prefix (e.g. "/license") so routes defined
+        // from the application root still match in subdirectory installs.
+        $base = $this->basePath();
+        if ($base !== '' && str_starts_with($uri, $base)) {
+            $uri = substr($uri, strlen($base));
+        }
+
         return '/' . trim($uri, '/');
+    }
+
+    /**
+     * The application's base URI path when installed in a subdirectory
+     * (e.g. "/license"), or an empty string at the web root.
+     *
+     * Auto-detected from SCRIPT_NAME; requires no configuration.
+     */
+    public function basePath(): string
+    {
+        $script = str_replace('\\', '/', (string) ($this->server['SCRIPT_NAME'] ?? ''));
+        $dir    = rtrim(dirname($script), '/');   // drop trailing /index.php
+        if (str_ends_with($dir, '/public')) {
+            $dir = substr($dir, 0, -7);           // drop trailing /public
+        }
+        $dir = '/' . trim($dir, '/');
+        return $dir === '/' ? '' : $dir;
     }
 
     public function isPost(): bool

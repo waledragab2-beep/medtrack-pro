@@ -10,7 +10,15 @@
     const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
 
     const csrfToken = () => (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
-    const baseUrl = () => window.location.origin;
+    // Absolute origin plus the app's base path (e.g. "/license") when the
+    // application is installed in a subdirectory. PLM_BASE is injected by the
+    // layout; it is already an absolute or root-relative base, so we only add
+    // the origin when it is root-relative.
+    const baseUrl = () => {
+        const b = (window.PLM_BASE || '').replace(/\/+$/, '');
+        if (/^https?:\/\//i.test(b)) return b;
+        return window.location.origin + b;
+    };
 
     /* ---------- Sidebar ---------- */
     function initSidebar() {
