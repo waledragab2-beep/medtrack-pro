@@ -24,6 +24,11 @@ return static function (Router $router): void {
     $router->post('/api/v1/licenses/deactivate', [LicenseApiController::class, 'deactivate'], $apiAuth);
     $router->get('/api/v1/licenses/{key}', [LicenseApiController::class, 'show'], $apiAuth);
 
+    // Public license check for browser / client-side apps (no API key; safe —
+    // returns only validity, never secrets). Rate-limited per IP internally.
+    $router->post('/api/v1/licenses/check', [LicenseApiController::class, 'publicCheck']);
+    $router->get('/api/v1/licenses/{key}/check', [LicenseApiController::class, 'publicCheck']);
+
     // Public key distribution for offline SDK verification.
     $router->get('/api/v1/public-key', [LicenseApiController::class, 'publicKey']);
 
