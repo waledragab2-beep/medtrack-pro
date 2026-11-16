@@ -34,6 +34,7 @@ function publicBrand(b: any) {
     social: b.social ?? {},
     googleReviewUrl: b.google_review_url,
     currency: b.currency,
+    defaultLocale: b.default_locale,
     alertSound: ns.alertSound,
     isDemo: b.is_demo,
   };
