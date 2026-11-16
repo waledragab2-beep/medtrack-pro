@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+**/dist
+mobile
+docs
+e2e
+**/.env
+**/uploads
+**/.test-uploads
+secrets

@@ -4,10 +4,12 @@ import { pool } from './db/pool.js';
 import { migrate } from './db/migrate.js';
 import { getProvider } from './notifications/providers/index.js';
 import { startOutboxWorker, stopOutboxWorker } from './notifications/outbox.js';
+import { ensureVapidKeys } from './notifications/vapid.js';
 import { attachRealtime, closeRealtime } from './realtime/io.js';
 
 async function main() {
   await migrate((m) => console.info(`[db] ${m}`));
+  const vapidSource = await ensureVapidKeys();
   const app = await buildApp();
   attachRealtime(app.server, corsOrigins());
   await app.listen({ port: config.PORT, host: config.HOST });
@@ -15,6 +17,7 @@ async function main() {
   for (const name of ['fcm', 'apns', 'webpush', 'expo'] as const) {
     app.log.info(`[push] ${name}: ${getProvider(name).isConfigured() ? 'configured' : 'NOT configured'}${config.PUSH_MOCK ? ' (mock mode)' : ''}`);
   }
+  app.log.info(`[push] web push keys loaded from ${vapidSource}`);
   if (config.NOTIFICATION_WORKER) startOutboxWorker();
 
   const shutdown = async (signal: string) => {

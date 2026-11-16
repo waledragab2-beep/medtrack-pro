@@ -36,6 +36,27 @@ export async function buildApp() {
   mkdirSync(uploadRoot, { recursive: true });
   await app.register(fastifyStatic, { root: uploadRoot, prefix: '/uploads/', decorateReply: false, maxAge: '30d', immutable: true });
 
+  if (config.SERVE_WEB_DIR) {
+    const webRoot = path.resolve(config.SERVE_WEB_DIR);
+    await app.register(fastifyStatic, {
+      root: webRoot,
+      prefix: '/',
+      setHeaders(res, file) {
+        if (file.endsWith('apple-app-site-association')) res.header('content-type', 'application/json');
+        if (file.includes(`${path.sep}assets${path.sep}`)) res.header('cache-control', 'public, max-age=31536000, immutable');
+        else res.header('cache-control', 'no-cache');
+      },
+    });
+    // SPA routes (/s/:slug, /o/:id, /app/…) fall back to index.html; API paths keep JSON 404s.
+    app.setNotFoundHandler((req, reply) => {
+      const p = req.url.split('?')[0];
+      if (req.method === 'GET' && !/^\/(api|uploads|socket\.io|assets|\.well-known)\//.test(p)) {
+        return reply.type('text/html').sendFile('index.html');
+      }
+      return reply.code(404).send({ error: { code: 'not_found', message: 'Not found' } });
+    });
+  }
+
   app.addHook('onSend', async (_req, reply) => {
     reply.header('X-Content-Type-Options', 'nosniff');
     reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');

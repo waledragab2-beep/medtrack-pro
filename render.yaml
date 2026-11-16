@@ -1,0 +1,29 @@
+# Render Blueprint for UYT (the app lives in ./uyt).
+# One web service (API + web app + realtime) and one PostgreSQL database.
+# Deploy: Render dashboard → New → Blueprint → pick this repository and branch.
+databases:
+  - name: uyt-db
+    plan: free # upgrade before real use: free databases expire after 30 days
+    databaseName: uyt
+    user: uyt
+
+services:
+  - type: web
+    name: uyt
+    runtime: docker
+    plan: free # upgrade to "starter" for an always-on service (free services sleep when idle)
+    dockerfilePath: ./uyt/Dockerfile
+    dockerContext: ./uyt
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: uyt-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      # PUBLIC_WEB_URL / PUBLIC_API_URL / CORS_ORIGINS default to Render's RENDER_EXTERNAL_URL.
+      # Set PUBLIC_URL=https://your-domain when you attach a custom domain.
+      # Web Push keys are generated on first start and stored in the database.
+      # Native push (optional, add later in the dashboard):
+      #   FIREBASE_SERVICE_ACCOUNT, APNS_KEY_ID, APNS_TEAM_ID, APNS_KEY_P8, APNS_BUNDLE_ID, APNS_PRODUCTION

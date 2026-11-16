@@ -130,6 +130,16 @@ EXPO_PUBLIC_API_URL=http://<IP-جهازك>:4000 EXPO_PUBLIC_WEB_URL=http://<IP-�
 
 ## 5. النشر (Production)
 
+### أسهل طريقة: Render (خدمة واحدة + قاعدة بيانات)
+ملف `render.yaml` في جذر المستودع و`uyt/Dockerfile` يبنيان خدمة واحدة تشغّل الموقع والـ API والـ Realtime على رابط واحد بشهادة HTTPS.
+1. من لوحة Render: **New ← Blueprint** ← اختر المستودع والفرع ← **Apply**.
+2. لا توجد مفاتيح مطلوبة: `JWT_SECRET` يُولَّد تلقائيًا، والرابط العام يؤخذ من `RENDER_EXTERNAL_URL`، ومفاتيح Web Push تُولَّد عند أول تشغيل وتُحفظ في قاعدة البيانات.
+3. افتح الرابط ← `/register` وأنشئ مطعمك.
+
+قيود الخطة المجانية: الخدمة تنام عند عدم الاستخدام (أول فتح بعدها بطيء، والتذكيرات التلقائية تتوقف أثناء النوم)، وقاعدة البيانات المجانية تنتهي بعد 30 يومًا، والصور المرفوعة تُمسح عند كل إعادة نشر (أضف Disk على `/app/uploads` في الخطة المدفوعة). للعمل الفعلي: خطة Starter للخدمة وخطة مدفوعة لقاعدة البيانات. عند ربط نطاقك أضف المتغير `PUBLIC_URL=https://your-domain`.
+
+### Docker Compose على خادمك
+
 ```bash
 cp .env.example .env      # الأسرار
 mkdir secrets             # firebase-service-account.json و AuthKey.p8

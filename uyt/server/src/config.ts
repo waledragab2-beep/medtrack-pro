@@ -7,6 +7,14 @@ try {
   /* no .env file – rely on real environment variables */
 }
 
+// One-service deployments (Render, Railway, …): the platform tells us our public URL.
+const platformUrl = process.env.PUBLIC_URL ?? process.env.RENDER_EXTERNAL_URL;
+if (platformUrl) {
+  process.env.PUBLIC_WEB_URL ||= platformUrl;
+  process.env.PUBLIC_API_URL ||= platformUrl;
+  process.env.CORS_ORIGINS ||= platformUrl;
+}
+
 const bool = z
   .string()
   .optional()
@@ -27,6 +35,8 @@ const schema = z.object({
   CORS_ORIGINS: z.string().default('http://localhost:5173'),
   UPLOAD_DIR: z.string().default('./uploads'),
   TRUST_PROXY: bool,
+  /** When set, the API also serves the built web app from this folder (single-service deployment). */
+  SERVE_WEB_DIR: z.string().optional(),
 
   // Push providers – each one is optional; unconfigured providers are skipped with a clear log line.
   FIREBASE_SERVICE_ACCOUNT: z.string().optional(), // JSON, base64 JSON, or a file path
