@@ -90,6 +90,23 @@ fs.mkdirSync(OUT, { recursive: true });
   await i.goto(c.url());
   await i.waitForSelector('text=هذا الطلب غير مربوط بهذا الجهاز');
 
+  // offline resilience: the cashier adds an order with no connection; it syncs when the network returns
+  await merchant.setOffline(true);
+  await m.fill('.order-input', '127');
+  await m.keyboard.press('Enter');
+  await m.waitForSelector('[data-testid="ticket-127"] .chip.warn');
+  await shot(m, '02c-cashier-offline-queue');
+  await merchant.setOffline(false);
+  await m.waitForFunction(() => !document.querySelector('[data-testid="ticket-127"] .chip.warn') && document.querySelector('[data-testid="ticket-127"]'), null, { timeout: 15000 });
+  const synced = await m.evaluate(async () => {
+    const t = JSON.parse(localStorage.getItem('uyt.tokens'));
+    const brandId = localStorage.getItem('uyt.brand');
+    const branchId = localStorage.getItem('uyt.branch');
+    const r = await fetch(`/api/brands/${brandId}/orders?branchId=${branchId}&scope=active`, { headers: { authorization: `Bearer ${t.accessToken}` } });
+    return (await r.json()).orders.map((o) => o.orderNumber);
+  });
+  assert(synced.includes('127'), 'offline order was not synced');
+
   // history shows the order with its rating
   await m.goto(`${WEB}/app/history`);
   await m.waitForSelector('.stars');
