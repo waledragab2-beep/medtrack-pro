@@ -5,6 +5,6 @@ mobile
 docs
 e2e
 **/.env
-**/uploads
-**/.test-uploads
+server/uploads
+server/.test-uploads
 secrets
