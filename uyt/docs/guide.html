@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دليل تشغيل UYT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+</head><body>
+<style>
+/* Layout: one reading column; each step = text beside its screenshot, stacking on phones. */
+:root {
+  --bg: #f7f6f3;
+  --panel: #ffffff;
+  --fg: #141413;
+  --muted: #5f5e59;
+  --line: #e4e2dc;
+  --accent: #e10600;
+  --accent-soft: #fdecea;
+  --code-bg: #141413;
+  --code-fg: #f4f3ef;
+  --ok: #12804a;
+  --f-body: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f0f0e; --panel: #181817; --fg: #f2f1ed; --muted: #a9a8a2; --line: #2c2b29;
+    --accent: #ff3b30; --accent-soft: #2a1311; --code-bg: #050505; --code-fg: #f2f1ed; --ok: #4ade80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f0f0e; --panel: #181817; --fg: #f2f1ed; --muted: #a9a8a2; --line: #2c2b29;
+  --accent: #ff3b30; --accent-soft: #2a1311; --code-bg: #050505; --code-fg: #f2f1ed; --ok: #4ade80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { line-height: 1.3; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+a { color: var(--accent); }
+
+header.top { padding-block: 40px 8px; display: flex; flex-direction: column; gap: 14px; }
+.brandline { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: .02em; }
+.mark { width: 30px; height: 30px; border-radius: 9px; background: #0a0a0a; display: grid; place-items: center; }
+.mark i { width: 10px; height: 10px; border-radius: 50%; background: #e10600; box-shadow: 0 0 0 4px #0a0a0a, 0 0 0 7px #e10600; }
+header.top h1 { font-size: clamp(30px, 5vw, 44px); }
+header.top p { color: var(--muted); max-width: 62ch; font-size: 17px; }
+
+nav.toc { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+nav.toc a { text-decoration: none; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 4px; }
+nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--accent); outline: none; }
+nav.toc b { font-size: 17px; }
+nav.toc span { color: var(--muted); font-size: 14px; }
+@media (max-width: 640px) { nav.toc { grid-template-columns: 1fr; } }
+
+section.part { display: flex; flex-direction: column; gap: 28px; scroll-margin-top: 16px; }
+.part-head { display: flex; flex-direction: column; gap: 6px; border-bottom: 2px solid var(--fg); padding-bottom: 12px; }
+.eyebrow { font-size: 13px; font-weight: 700; letter-spacing: .06em; color: var(--accent); }
+.part-head h2 { font-size: clamp(24px, 3.4vw, 32px); }
+.part-head p { color: var(--muted); }
+
+.step { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 28px; align-items: start; }
+.step.phone { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+.step.textonly { grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 780px) { .step, .step.phone { grid-template-columns: minmax(0, 1fr); } }
+.step .text { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.step h3 { font-size: 21px; display: flex; gap: 12px; align-items: baseline; }
+.step h3 .n { flex-shrink: 0; font-family: var(--f-mono); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); border-radius: 8px; padding: 2px 9px; }
+.step ul, .step ol { margin: 0; padding-inline-start: 22px; display: flex; flex-direction: column; gap: 6px; }
+.step li::marker { color: var(--accent); }
+.note { background: var(--accent-soft); border-inline-start: 3px solid var(--accent); padding: 10px 14px; border-radius: 8px; font-size: 15px; }
+.tip { color: var(--muted); font-size: 15px; }
+kbd { font-family: var(--f-mono); font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; }
+.ltr { direction: ltr; unicode-bidi: isolate; font-family: var(--f-mono); font-size: 14px; }
+
+figure { margin: 0; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); display: block; }
+.step.phone figure img { max-width: 300px; margin-inline: auto; border-radius: 22px; }
+figure.pair { flex-direction: row; gap: 12px; }
+figure.pair > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+figure.pair img { max-width: 100%; border-radius: 18px; }
+figcaption { font-size: 14px; color: var(--muted); text-align: center; }
+
+.code { position: relative; background: var(--code-bg); color: var(--code-fg); border-radius: 12px; overflow: hidden; }
+.code pre { margin: 0; padding: 16px 18px; overflow-x: auto; direction: ltr; text-align: left; font-family: var(--f-mono); font-size: 13.5px; line-height: 1.7; }
+.code pre .c { color: #8f8e88; }
+.code button { position: absolute; top: 8px; inset-inline-start: 8px; font-family: var(--f-body); font-size: 12px; font-weight: 600; border: 1px solid #3a3a37; background: #232321; color: #f4f3ef; border-radius: 7px; padding: 3px 10px; cursor: pointer; }
+.code button:focus-visible { outline: 2px solid var(--accent); }
+
+table.accts { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 15px; }
+table.accts th, table.accts td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: start; }
+table.accts th { font-size: 13px; color: var(--muted); font-weight: 600; }
+table.accts tr:last-child td { border-bottom: 0; }
+.tbl { overflow-x: auto; }
+
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-weight: 600; }
+.flow span { background: var(--panel); border: 1px solid var(--line); border-radius: 99px; padding: 6px 14px; }
+.flow i { color: var(--accent); font-style: normal; }
+footer { color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+</style>
+
+<div class="wrap" dir="rtl" lang="ar">
+  <header class="top">
+    <div class="brandline"><span class="mark"><i></i></span> UYT</div>
+    <h1>دليل تشغيل UYT خطوة بخطوة</h1>
+    <p>هذا الدليل في جزأين: كيف تشغّل النظام على جهازك، ثم كيف يستخدمه المطعم كل يوم من أول تسجيل حتى تقييم العميل. كل الصور لقطات حقيقية من النظام وهو يعمل.</p>
+    <div class="flow" aria-label="مسار الطلب">
+      <span>الكاشير يكتب رقم الطلب</span><i>←</i><span>العميل يمسح QR</span><i>←</i><span>الكاشير يضغط «جاهز»</span><i>←</i><span>تنبيه بصوت واهتزاز</span><i>←</i><span>تسليم وتقييم</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="المحتويات">
+    <a href="#setup"><b>الجزء الأول: تشغيل النظام</b><span>تثبيت البرامج وتشغيل الخادم والموقع وتطبيق الموبايل</span></a>
+    <a href="#use"><b>الجزء الثاني: الاستخدام اليومي</b><span>إعداد المحل، شاشة الكاشير، تجربة العميل، الإحصائيات</span></a>
+  </nav>
+
+  <!-- ───────────── PART 1 ───────────── -->
+  <section class="part" id="setup">
+    <div class="part-head">
+      <span class="eyebrow">الجزء الأول</span>
+      <h2>تشغيل النظام على جهازك</h2>
+      <p>للمبرمج أو المسؤول التقني. يكفي جهاز كمبيوتر واحد للتجربة.</p>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">1</span>ثبّت البرامج المطلوبة</h3>
+        <ul>
+          <li><b>Node.js الإصدار 22</b> من nodejs.org</li>
+          <li><b>PostgreSQL الإصدار 16</b> (قاعدة البيانات) من postgresql.org</li>
+          <li>انسخ المشروع من GitHub، الفرع <span class="ltr">ccr-d596de12-b4bqim</span>، ثم ادخل مجلد <span class="ltr">uyt</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">2</span>أنشئ قاعدة البيانات</h3>
+        <p>أنشئ مستخدمًا اسمه <span class="ltr">uyt</span> بكلمة مرور <span class="ltr">uyt</span>، وقاعدتين: واحدة للعمل وواحدة للاختبارات.</p>
+        <div class="code"><button type="button" data-copy>نسخ</button><pre>createuser -P uyt          <span class="c"># اكتب كلمة المرور: uyt</span>
+createdb -O uyt uyt
+createdb -O uyt uyt_test</pre></div>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">3</span>شغّل الخادم (Backend)</h3>
+        <p>انسخ ملف الإعدادات، وضع في <span class="ltr">JWT_SECRET</span> نصًا عشوائيًا طويلًا (32 حرفًا على الأقل). أمر <span class="ltr">seed:demo</span> اختياري: ينشئ مطعمًا تجريبيًا عليه علامة DEMO مع بيانات 30 يومًا لتجربة الإحصائيات.</p>
+        <div class="code"><button type="button" data-copy>نسخ</button><pre>cd server
+cp .env.example .env
+npm install
+npm run migrate                  <span class="c"># إنشاء الجداول</span>
+npm run seed:demo -- --history   <span class="c"># اختياري: مطعم تجريبي</span>
+npm run dev                      <span class="c"># يعمل على http://localhost:4000</span></pre></div>
+        <p class="tip">عند التشغيل يطبع الخادم حالة كل قناة إشعارات (FCM، APNs، Web Push). لتفعيل إشعارات المتصفح نفّذ <span class="ltr">npx web-push generate-vapid-keys</span> وضع المفتاحين في <span class="ltr">.env</span>.</p>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">4</span>شغّل الموقع (لوحة الكاشير وصفحة العميل)</h3>
+        <p>في نافذة أوامر ثانية، مع ترك الخادم يعمل:</p>
+        <div class="code"><button type="button" data-copy>نسخ</button><pre>cd web
+npm install
+npm run dev                      <span class="c"># يعمل على http://localhost:5173</span></pre></div>
+        <p>افتح المتصفح على هذه العناوين:</p>
+        <div class="tbl"><table class="accts">
+          <thead><tr><th>الصفحة</th><th>العنوان</th><th>الدخول</th></tr></thead>
+          <tbody>
+            <tr><td>الصفحة الرئيسية</td><td class="ltr">localhost:5173</td><td>—</td></tr>
+            <tr><td>لوحة المالك (تجريبي)</td><td class="ltr">localhost:5173/login</td><td class="ltr">demo@uyt.app / Demo1234</td></tr>
+            <tr><td>لوحة الكاشير (تجريبي)</td><td class="ltr">localhost:5173/login</td><td class="ltr">cashier@uyt.app / Demo1234</td></tr>
+            <tr><td>صفحة العميل (تجريبي)</td><td class="ltr">localhost:5173/s/demo</td><td>بدون دخول</td></tr>
+            <tr><td>تسجيل مطعم جديد</td><td class="ltr">localhost:5173/register</td><td>—</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">5</span>جرّب من موبايلك على نفس شبكة الواي فاي</h3>
+        <p>اعرف عنوان IP لجهاز الكمبيوتر (مثل <span class="ltr">192.168.1.10</span>)، ثم افتح من الموبايل <span class="ltr">http://192.168.1.10:5173/s/demo</span>. بهذا ترى تجربة العميل الحقيقية: الكاشير على الكمبيوتر والعميل على الموبايل.</p>
+        <p class="note">الكاميرا وإشعارات المتصفح في الخلفية تحتاج HTTPS. على الشبكة المحلية تعمل الصفحة والتنبيه داخلها، أما الإشعار والصفحة مغلقة فيعمل بعد النشر على نطاق بشهادة HTTPS.</p>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">6</span>تطبيق الموبايل (اختياري)</h3>
+        <div class="code"><button type="button" data-copy>نسخ</button><pre>cd mobile
+npm install
+EXPO_PUBLIC_API_URL=http://192.168.1.10:4000 EXPO_PUBLIC_WEB_URL=http://192.168.1.10:5173 npx expo start</pre></div>
+        <p>امسح الكود الذي يظهر بتطبيق <b>Expo Go</b> على موبايلك. لبناء نسخة المتجر (APK و AAB للأندرويد، و IPA للآيفون) اتبع ملف <span class="ltr">docs/RELEASE.md</span>؛ يحتاج حساب Expo وحساب Apple Developer وحساب Google Play.</p>
+      </div>
+    </div>
+
+    <div class="step textonly">
+      <div class="text">
+        <h3><span class="n">7</span>النشر على الإنترنت</h3>
+        <div class="code"><button type="button" data-copy>نسخ</button><pre>cp .env.example .env       <span class="c"># ضع كلمات المرور والمفاتيح</span>
+docker compose up -d --build</pre></div>
+        <p>ضع أمامه شهادة HTTPS (مثل Cloudflare أو Caddy)، واربط نطاقك. الجداول تُنشأ تلقائيًا عند أول تشغيل.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── PART 2 ───────────── -->
+  <section class="part" id="use">
+    <div class="part-head">
+      <span class="eyebrow">الجزء الثاني</span>
+      <h2>الاستخدام اليومي في المطعم</h2>
+      <p>لصاحب المطعم والكاشير. الإعداد مرة واحدة (الخطوات 1 إلى 3)، ثم العمل اليومي (4 إلى 8).</p>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">1</span>سجّل مطعمك واضبط الهوية</h3>
+        <ol>
+          <li>من الصفحة الرئيسية اضغط <b>«ابدأ مجانًا»</b> واكتب اسم المطعم وبريدك وكلمة مرور. تبدأ تجربة مجانية 14 يومًا.</li>
+          <li>تفتح صفحة <b>«هوية البراند»</b>: ارفع اللوجو وصورة الغلاف واختر الألوان. المعاينة على اليسار تتغير مباشرة كما سيراها العميل.</li>
+          <li>أضف روابط Instagram و Facebook و TikTok، و<b>رابط تقييم Google</b> من حسابك في Google Business.</li>
+          <li>في «إعدادات الإشعارات» عدّل نص رسالة «جاهز» إن أردت، وفعّل التذكير التلقائي إذا تأخر العميل.</li>
+          <li>اضغط <b>«حفظ»</b>.</li>
+        </ol>
+      </div>
+      <figure><img src="screens/11-brand-settings.png" alt="صفحة هوية البراند مع معاينة صفحة العميل" loading="lazy"><figcaption>هوية البراند مع معاينة حية لصفحة العميل</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">2</span>اطبع QR المحل وضعه على الكاونتر</h3>
+        <ol>
+          <li>من القائمة افتح <b>«الفروع و QR»</b>. يوجد فرع رئيسي جاهز، ويمكنك إضافة فروع أخرى.</li>
+          <li>اضغط <b>«تعديل»</b> لإضافة العنوان والموقع على الخريطة ومتوسط وقت التحضير.</li>
+          <li>اضغط <b>«طباعة ملصق»</b> لطباعة ملصق A5 فيه الكود باسم مطعمك، أو <b>«تحميل PNG»</b>.</li>
+          <li>ضع الملصق على الكاونتر أو الطاولات.</li>
+        </ol>
+        <p class="note">للأمان: فعّل خيار <b>«طلب كود من 4 أرقام»</b> إذا أردت ألا يستطيع أحد ربط طلب ليس له. يظهر الكود للكاشير بجوار كل طلب ليعطيه للعميل.</p>
+      </div>
+      <figure><img src="screens/12-branches-qr.png" alt="صفحة الفروع ورمز QR لكل فرع" loading="lazy"><figcaption>كل فرع له QR خاص به</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">3</span>أضف الموظفين</h3>
+        <ol>
+          <li>افتح <b>«الموظفون»</b> واضغط <b>«إضافة موظف»</b>.</li>
+          <li>اكتب الاسم والبريد واختر الصلاحية، وضع كلمة مرور أولية وأعطها للموظف.</li>
+        </ol>
+        <ul>
+          <li><b>المالك:</b> كل شيء.</li>
+          <li><b>المدير:</b> الطلبات والإحصائيات والإعدادات وإضافة كاشير.</li>
+          <li><b>الكاشير:</b> شاشة الطلبات والسجل فقط، ويمكن ربطه بفرع واحد.</li>
+        </ul>
+        <p class="tip">يمكنك إيقاف أي موظف بزر «إيقاف» فيخرج من النظام فورًا. أضف أيضًا المنيو والعروض من صفحتي «المنيو» و«العروض» لتظهر للعميل أثناء الانتظار.</p>
+      </div>
+      <figure><img src="screens/14-staff.png" alt="صفحة إدارة الموظفين" loading="lazy"><figcaption>إدارة الموظفين وصلاحياتهم</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">4</span>الكاشير: أضف الطلب</h3>
+        <ol>
+          <li>الكاشير يسجّل الدخول فتفتح شاشة <b>«الطلبات»</b> مباشرة.</li>
+          <li>يكتب <b>رقم الطلب</b> الموجود على الإيصال في الخانة الكبيرة ويضغط <kbd>Enter</kbd> أو <b>«إضافة الطلب»</b>.</li>
+          <li>يظهر فورًا <b>QR خاص بهذا الطلب</b>. يوجّه الشاشة للعميل ليمسحه بكاميرا موبايله، فيرتبط موبايله بالطلب بدون كتابة أي شيء.</li>
+          <li>عندما يمسح العميل الكود تُغلق النافذة تلقائيًا ويظهر على الطلب <b>«الهاتف مربوط»</b>.</li>
+        </ol>
+        <p class="tip">وقت التحضير يُحسب تلقائيًا من متوسط آخر الطلبات، ويمكن اختيار 3 أو 5 أو 10 أو 15 دقيقة يدويًا.</p>
+      </div>
+      <figure><img src="screens/03-cashier-order-qr.png" alt="نافذة QR خاصة بالطلب على شاشة الكاشير" loading="lazy"><figcaption>QR الطلب يظهر بعد الإضافة مباشرة</figcaption></figure>
+    </div>
+
+    <div class="step phone">
+      <div class="text">
+        <h3><span class="n">5</span>العميل: يمسح QR ويتابع طلبه</h3>
+        <p>العميل لا يحتاج تثبيت أي تطبيق. له طريقتان:</p>
+        <ul>
+          <li>يمسح <b>QR الطلب</b> من شاشة الكاشير، فيفتح طلبه مباشرة.</li>
+          <li>أو يمسح <b>QR المحل</b> من الملصق، ويكتب رقم طلبه، ويضغط <b>«فتح الطلب»</b>. الأرقام العربية مثل ١٢٥ مقبولة.</li>
+        </ul>
+        <p>تظهر له صفحة بهوية المطعم فيها رقم طلبه، وعدّاد للوقت المتوقع، وعدد الطلبات قبله. تحتها العروض والمنيو وحسابات السوشيال والموقع على الخريطة.</p>
+        <p class="note">يضغط العميل <b>«فعّل التنبيهات»</b> ليصله الإشعار حتى لو أغلق الصفحة. على iPhone يجب أولًا إضافة الصفحة للشاشة الرئيسية (مشاركة ← إضافة إلى الشاشة الرئيسية).</p>
+      </div>
+      <figure class="pair">
+        <div><img src="screens/05-customer-store-landing.png" alt="صفحة المحل وخانة رقم الطلب" loading="lazy"><figcaption>إدخال رقم الطلب</figcaption></div>
+        <div><img src="screens/06-customer-preparing.png" alt="صفحة الطلب قيد التحضير مع العداد" loading="lazy"><figcaption>طلبك قيد التحضير</figcaption></div>
+      </figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">6</span>الكاشير يرى كل الطلبات لحظيًا</h3>
+        <p>الشاشة مقسومة لعمودين:</p>
+        <ul>
+          <li><b>قيد التحضير:</b> رقم كبير، ومدة الانتظار تعدّ أمامك، وشريط يحمرّ إذا تجاوز الطلب الوقت المتوقع.</li>
+          <li><b>جاهز، بانتظار الاستلام:</b> الطلبات التي تم تنبيه أصحابها.</li>
+        </ul>
+        <p>على كل طلب علامات توضح الحالة: «الهاتف مربوط» أو «لم يُربط هاتف بعد»، و«التنبيهات مفعّلة»، و«وصل التنبيه» بعد وصول الإشعار فعلًا.</p>
+      </div>
+      <figure><img src="screens/02-cashier-board.png" alt="شاشة الكاشير بعمودي قيد التحضير وجاهز" loading="lazy"><figcaption>شاشة الكاشير على التابلت أو الكمبيوتر</figcaption></figure>
+    </div>
+
+    <div class="step phone">
+      <div class="text">
+        <h3><span class="n">7</span>اضغط «جاهز» فيصل التنبيه للعميل</h3>
+        <ol>
+          <li>عندما يجهز الطلب يضغط الكاشير الزر الأحمر <b>«جاهز»</b>.</li>
+          <li>ينتقل الطلب لعمود «جاهز»، وفي نفس اللحظة تظهر عند العميل شاشة حمراء كبيرة: <b>«طلبك جاهز، تفضل استلمه من الكاونتر»</b> مع صوت واهتزاز.</li>
+          <li>إذا كانت الصفحة مغلقة يصله إشعار على شاشة القفل: «🔔 طلبك جاهز! تعال استلمه من الكاونتر».</li>
+          <li>يضغط العميل <b>«حسنًا، في الطريق!»</b> فيتوقف الصوت.</li>
+        </ol>
+        <p class="tip">إذا تأخر العميل يظهر على الطلب «متأخر». اضغط زر الجرس 🔔 لإرسال تذكير، أو اترك التذكير التلقائي يعمل. الضغط على «جاهز» مرتين لا يرسل الإشعار مرتين.</p>
+        <p class="note">النظام يحترم إعدادات الموبايل: إذا كان الموبايل على الصامت يصل الإشعار والاهتزاز بدون صوت.</p>
+      </div>
+      <figure><img src="screens/07-customer-ready-alert.png" alt="شاشة طلبك جاهز الحمراء على موبايل العميل" loading="lazy"><figcaption>ما يراه العميل لحظة الضغط على «جاهز»</figcaption></figure>
+    </div>
+
+    <div class="step phone">
+      <div class="text">
+        <h3><span class="n">8</span>التسليم والتقييم</h3>
+        <ol>
+          <li>عند وصول العميل للكاونتر يضغط الكاشير <b>«تم التسليم»</b>، فيختفي الطلب من الشاشة وينتقل للسجل.</li>
+          <li>تظهر للعميل رسالة شكر، ويختار من 1 إلى 5 نجوم، ويكتب تعليقًا إن أراد.</li>
+          <li>يظهر زر <b>«قيّمنا على Google»</b> ليفتح صفحة تقييم مطعمك على خرائط Google.</li>
+        </ol>
+        <p class="tip">لحذف طلب أُضيف بالخطأ: زر النقاط الثلاث ⋮ بجوار الطلب ← «حذف الطلب». ومن نفس القائمة: عرض QR الطلب مرة أخرى، أو «فك ربط الهاتف» إذا ربط شخص خطأ.</p>
+      </div>
+      <figure><img src="screens/08-customer-thanks.png" alt="شاشة الشكر والتقييم بعد الاستلام" loading="lazy"><figcaption>بعد الاستلام: شكر وتقييم</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">9</span>إذا انقطع الإنترنت عند الكاشير</h3>
+        <p>يظهر شريط أحمر أعلى الشاشة. يستطيع الكاشير الاستمرار في إضافة الطلبات والضغط على «جاهز» و«تم التسليم»، وتظهر الطلبات بعلامة <b>«بانتظار المزامنة»</b>. عند عودة الإنترنت تُرسل كلها تلقائيًا بالترتيب.</p>
+      </div>
+      <figure><img src="screens/02c-cashier-offline-queue.png" alt="شاشة الكاشير بدون إنترنت وطلب بانتظار المزامنة" loading="lazy"><figcaption>طلب أُضيف بدون إنترنت</figcaption></figure>
+    </div>
+
+    <div class="step phone">
+      <div class="text">
+        <h3><span class="n">10</span>الكاشير على الموبايل</h3>
+        <p>نفس الشاشة تعمل على موبايل الكاشير: الخانة والزر بالعرض الكامل، والقائمة في الأسفل (الطلبات، السجل، المزيد).</p>
+      </div>
+      <figure><img src="screens/04-cashier-mobile.png" alt="شاشة الكاشير على الموبايل" loading="lazy"><figcaption>شاشة الكاشير على الموبايل</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">11</span>السجل: الطلبات السابقة</h3>
+        <p>صفحة <b>«السجل»</b> تعرض كل طلب: وقت إنشائه، ومدة تحضيره، والوقت بين التنبيه والاستلام، وهل ربط العميل هاتفه، وتقييمه. ابحث برقم الطلب أو صفِّ حسب الحالة.</p>
+      </div>
+      <figure><img src="screens/13-history.png" alt="جدول الطلبات السابقة" loading="lazy"><figcaption>سجل الطلبات</figcaption></figure>
+    </div>
+
+    <div class="step">
+      <div class="text">
+        <h3><span class="n">12</span>الإحصائيات (للمالك والمدير)</h3>
+        <p>اختر الفترة (اليوم، 7 أيام، 30 يومًا، هذا الشهر، 3 أشهر، أو تاريخًا مخصصًا) والفرع. كل رقم يقارن نفسه بالفترة السابقة بسهم أخضر أو أحمر:</p>
+        <ul>
+          <li>إجمالي الطلبات، ومتوسطها يوميًا، وعدد المستلمة.</li>
+          <li>متوسط وقت التحضير، ومتوسط الاستلام بعد التنبيه.</li>
+          <li>نسبة وصول التنبيه، والطلبات المتأخر استلامها.</li>
+          <li>متوسط التقييم وعدد التقييمات ونقرات تقييم Google.</li>
+          <li>رسم الطلبات اليومية، وساعات الذروة، وأحدث التقييمات.</li>
+        </ul>
+        <p class="tip">الأرقام في الصورة من المطعم التجريبي (DEMO) وليست حقيقية.</p>
+      </div>
+      <figure><img src="screens/10-analytics.png" alt="لوحة الإحصائيات" loading="lazy"><figcaption>لوحة الإحصائيات</figcaption></figure>
+    </div>
+  </section>
+
+  <footer>
+    التفاصيل التقنية الكاملة في ملفات المشروع: <span class="ltr">uyt/README.md</span> و <span class="ltr">uyt/docs/API.md</span> و <span class="ltr">uyt/docs/RELEASE.md</span>.
+  </footer>
+</div>
+
+<script>
+  document.querySelectorAll('[data-copy]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pre = btn.parentElement.querySelector('pre');
+      var text = Array.from(pre.childNodes).map(function (n) { return n.nodeType === 3 ? n.textContent : (n.classList && n.classList.contains('c') ? '' : n.textContent); }).join('').replace(/[ \t]+$/gm, '');
+      var done = function () { btn.textContent = 'تم النسخ'; setTimeout(function () { btn.textContent = 'نسخ'; }, 1500); };
+      try {
+        navigator.clipboard.writeText(text).then(done, function () { select(pre); });
+      } catch (e) { select(pre); }
+    });
+  });
+  function select(el) { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+</script>
+</body></html>
